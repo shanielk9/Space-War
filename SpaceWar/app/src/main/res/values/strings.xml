@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name" translatable="false">Space war</string>
+    <string name="main_play_game">Play Game</string>
+    <string name="main_score_board">Score Board</string>
+</resources>
