@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_play_game">התחל משחק</string>
+    <string name="main_score_board">טבלת שיאים</string>
+    <string name="progress_bar_message">בטעינה...</string>
+    <string name="stage">שלב 1:</string>
+</resources>

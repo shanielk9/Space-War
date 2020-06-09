@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name" translatable="false">Space War: Save The Galaxy</string>
+    <string name="main_play_game">Start Game</string>
+    <string name="main_score_board">Top 10 Players</string>
+    <string name="progress_bar_message">Loading...</string>
+    <string name="stage">Stage 1</string>
+</resources>
