@@ -50,10 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     VideoView m_VideoView;
     MediaPlayer m_MediaPlayer;
     HomeWatcher mHomeWatcher;
-    ImageButton m_PlayButton;
-    Button m_LeaderBoardButton;
-    String[] settings = {"Sound", "Music", "Vibrate"};
-
+    Button m_PlayButton;
+    Button m_HighScoreButton;
 
 
 
@@ -92,10 +90,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        m_PlayButton = findViewById(R.id.PlayGame);
+        m_PlayButton = findViewById(R.id.play_game_btn);
         m_PlayButton.setOnClickListener(this);
-        m_LeaderBoardButton = findViewById(R.id.HighScore);
-        m_LeaderBoardButton.setOnClickListener(this);
+        m_HighScoreButton = findViewById(R.id.high_score_btn);
+        m_HighScoreButton.setOnClickListener(this);
 
         m_VideoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.main_vid_background);
@@ -210,12 +208,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId())
         {
 
-            case R.id.HighScore:
+            case R.id.high_score_btn:
                 Intent intent = new Intent(MainActivity.this, HighScoreActivity.class);
                 startActivity(intent);
                 break;
-            case R.id.PlayGame:
-                Intent intent1 = new Intent(MainActivity.this, GameActivity.class);
+            case R.id.play_game_btn:
+                Intent intent1 = new Intent(MainActivity.this, TutorialActivity.class);
                 startActivity(intent1);
                 break;
             default:
@@ -249,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         builder.setTitle("Settings:");
 
 // add a checkbox list
-        builder.setMultiChoiceItems(settings, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+        builder.setMultiChoiceItems(R.array.settings_array, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                 // user checked or unchecked a box

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TutorialActivity"
+    android:background="@drawable/first_stage"
+    android:id="@+id/relative_layout">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tutorial"
+        android:textColor="@color/white"
+        android:layout_marginTop="200dp"
+        android:textStyle="bold"
+        android:textSize="40sp"/>
+
+
+
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:id="@+id/enemy_imageView"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_alien"/>
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/player_imageView"
+        android:src="@drawable/ic_battleship1"
+        android:layout_marginTop="580dp"
+        android:layout_marginStart="150dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Skip"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/skip_btn"/>
+
+</RelativeLayout>

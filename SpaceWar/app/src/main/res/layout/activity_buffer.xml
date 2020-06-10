@@ -22,15 +22,21 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:indeterminate="true"
         android:indeterminateDuration="4000"
-        android:indeterminateDrawable="@drawable/buffer_costume"
+        android:indeterminateDrawable="@drawable/buffer_custom"
         android:layout_marginTop="80dp"
         />
 
-    <pl.droidsonroids.gif.GifImageView
+    <TextView
         android:layout_width="wrap_content"
-        android:layout_height="300dp"
-        android:layout_marginTop="-100dp"
-        android:src="@drawable/loading_gif"/>
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="30sp"
+        android:fontFamily="@font/aldrich"
+        android:textSize="25dp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:text="@string/loading"
+        android:id="@+id/loading_tv"/>
 
 
 

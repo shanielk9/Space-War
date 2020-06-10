@@ -7,6 +7,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.VideoView;
 
 import java.util.ArrayList;
@@ -17,12 +21,25 @@ public class HighScoreActivity extends AppCompatActivity {
     MediaPlayer m_MediaPlayer;
     int m_VideoCurrPosition;
     RecyclerView m_RecyclerView;
+    LinearLayout m_HighScoreLayout;
+    TextView m_HighScoreTv;
+    Animation upToDown,downToUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_highscore);
 
+        //Animation start activity
+        m_HighScoreLayout = findViewById(R.id.high_score_layout);
+        m_HighScoreTv = findViewById(R.id.high_score_tv);
+
+        upToDown = AnimationUtils.loadAnimation(this,R.anim.up_to_down);
+        downToUp = AnimationUtils.loadAnimation(this,R.anim.down_to_up);
+        m_HighScoreLayout.setAnimation(downToUp);
+        m_HighScoreTv.setAnimation(upToDown);
+
+        //Put video on background
         m_VideoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.main_vid_background);
         m_VideoView.setVideoURI(uri);
@@ -61,5 +78,8 @@ public class HighScoreActivity extends AppCompatActivity {
 
         PlayerAdapter playerAdapter = new PlayerAdapter(top10Players);
         m_RecyclerView.setAdapter(playerAdapter);
+
+
+
         }
     }
