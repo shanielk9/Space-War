@@ -2,6 +2,7 @@ package com.example.spacewar;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 
 public class Shot {
@@ -19,7 +20,8 @@ public class Shot {
         m_X = spaceShipX + SpaceShipLenght / 2;
         m_Y = spaceShipY + SpaceShipHight / 2;
 
-        m_Icon = null; /// TODO : find icon
+        m_Icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.laser_blue);
+        m_Icon = Bitmap.createScaledBitmap(m_Icon, 50, 50, false);
 
         m_Bounds = new Rect(m_X, m_Y, m_X + m_Icon.getWidth(), m_Y + m_Icon.getHeight());
     }
@@ -34,7 +36,6 @@ public class Shot {
 
     public void hit() {
         m_Y = 0 - m_Icon.getHeight();
-        m_Icon = null;
     }
 
     public Bitmap get_Icon() {

@@ -3,7 +3,15 @@ package com.example.spacewar;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.os.Build;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import java.util.ArrayList;
 
@@ -18,35 +26,39 @@ public class GamePlayer {
     private int m_MarginFromSides;
     private int m_ScreenSizeX;
 
-    public Bitmap getM_Icon() {
+    public Bitmap get_Icon() {
         return m_Icon;
     }
 
-    public int getM_X() {
+    public int get_X() {
         return m_X;
     }
 
-    public int getM_Y() {
+    public int get_Y() {
         return m_Y;
     }
 
-    public ArrayList<Shot> getM_Shots() {
+    public ArrayList<Shot> get_Shots() {
         return m_Shots;
     }
 
-    public Rect getM_Bounds() {
+    public Rect get_Bounds() {
         return m_Bounds;
     }
 
     private int m_ScreenSizeY;
 
-    public GamePlayer(Context context, int screenSizeX, int screenSizeY, Bitmap icon) {
+    public GamePlayer(Context context, int screenSizeX, int screenSizeY, SoundPlayer soundPlayer) {
         m_ScreenSizeX = screenSizeX;
         m_ScreenSizeY = screenSizeY;
         m_Context = context;
 
         m_MarginFromSides = 16;
-        m_Icon = icon;
+
+
+        //VectorDrawableCompat.create(context.getResources(),R.drawable.ic_battleship1,null);
+        m_Icon = getBitmapFromVectorDrawable(context,R.drawable.ic_battleship1);
+        m_Icon = Bitmap.createScaledBitmap(m_Icon, 200, 200, false);
 
         m_X = screenSizeX/2 - m_Icon.getWidth()/2;
         m_Y = screenSizeY - m_Icon.getHeight() - m_MarginFromSides;
@@ -56,14 +68,32 @@ public class GamePlayer {
         m_Bounds = new Rect(m_X, m_Y, m_X + m_Icon.getWidth(), m_Y + m_Icon.getHeight());
     }
 
+    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = (DrawableCompat.wrap(drawable)).mutate();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
     public void fire(){
         m_Shots.add(new Shot(m_Context, m_ScreenSizeX, m_ScreenSizeY, m_X, m_Y, m_Icon.getWidth(),m_Icon.getHeight()));
     }
 
     public void update(int x, int y) // while user change place of the battle ship it send the new to here
     {
-        x = m_X;
-        y=m_Y;
+        if (x > 0 && x < m_ScreenSizeX - m_Icon.getWidth())
+            m_X = x;
+        if (y > 0 &&  y < m_ScreenSizeY - m_Icon.getHeight())
+            m_Y = y;
+
         m_Bounds.left = x;
         m_Bounds.top = y;
         m_Bounds.right = x + m_Icon.getWidth();

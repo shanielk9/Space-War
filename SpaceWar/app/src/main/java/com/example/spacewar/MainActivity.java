@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         m_MediaPlayer.release();
         m_MediaPlayer = null;
-//music
+        //music
         doUnbindService();
         Intent music = new Intent();
         music.setClass(this,MusicService.class);
@@ -210,10 +210,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.high_score_btn:
                 Intent intent = new Intent(MainActivity.this, HighScoreActivity.class);
+                overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.fade_out);
                 startActivity(intent);
                 break;
             case R.id.play_game_btn:
                 Intent intent1 = new Intent(MainActivity.this, TutorialActivity.class);
+                overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
                 startActivity(intent1);
                 break;
             default:
@@ -246,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Settings:");
 
-// add a checkbox list
+        // add a checkbox list
         builder.setMultiChoiceItems(R.array.settings_array, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -273,14 +275,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-// add OK and Cancel buttons
+        // add OK and Cancel buttons
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
         });
 
-// create and show the alert dialog
+        // create and show the alert dialog
         AlertDialog dialog = builder.create();
         dialog.show();
     }
@@ -289,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         if(isSoundCheck)
         {
-            MediaPlayer pressSound = MediaPlayer.create(MainActivity.this, R.raw.press_sound);
+            MediaPlayer pressSound = MediaPlayer.create(MainActivity.this, R.raw.click_electronic);
             pressSound.setVolume(30,30);
             pressSound.start();
         }

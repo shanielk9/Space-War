@@ -8,4 +8,8 @@
     <string name="music">מוזיקה</string>
     <string name="sound">קול</string>
     <string name="vibrate">רטט</string>
+    <string name="score">"ניקוד: "</string>
+    <string name="end_game_score">הניקוד שלך הוא:</string>
+    <string name="enter_name">הכנס את השם שלך:</string>
+    <string name="ok">אישור</string>
 </resources>

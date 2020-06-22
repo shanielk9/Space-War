@@ -16,6 +16,10 @@
     <string name="music">Music</string>
     <string name="sound">Sound</string>
     <string name="vibrate">Vibrate</string>
+    <string name="score">Score:</string>
+    <string name="end_game_score">Your score is:</string>
+    <string name="enter_name">Enter your name:</string>
+    <string name="ok">OK</string>
 
 
 </resources>
