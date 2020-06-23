@@ -31,7 +31,6 @@
         android:outlineAmbientShadowColor="@color/black"
         android:src="@drawable/tutorial_patterns"/>
 
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -40,7 +39,7 @@
         android:textColor="@color/white"
         android:fontFamily="@font/aldrich"
         android:layout_gravity="center"
-
+        android:gravity="center"
         android:textStyle="bold"
         android:textSize="30sp"
         android:shadowRadius="2"
@@ -49,8 +48,8 @@
 
 
     <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:id="@+id/enemy_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_gravity="center|top"
@@ -65,8 +64,8 @@
         android:src="@drawable/ic_gift"/>
 
     <ImageView
-        android:layout_width="80dp"
-        android:layout_height="120dp"
+        android:layout_width="10dp"
+        android:layout_height="50dp"
         android:id="@+id/shot_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_marginBottom="60dp"
@@ -74,8 +73,8 @@
         android:src="@drawable/laser_blue" />
 
     <ImageView
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:id="@+id/player_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_marginBottom="60dp"
@@ -94,5 +93,6 @@
         android:textColor="@color/black"
         android:background="@drawable/skip_btn"
         android:id="@+id/skip_btn"/>
+
  </FrameLayout>
 </LinearLayout>

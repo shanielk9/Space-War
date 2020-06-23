@@ -11,8 +11,8 @@
         <item>@string/sound</item>
         <item>@string/music</item>
         <item>@string/vibrate</item>
-
     </string-array>
+
     <string name="music">Music</string>
     <string name="sound">Sound</string>
     <string name="vibrate">Vibrate</string>
@@ -20,6 +20,15 @@
     <string name="end_game_score">Your score is:</string>
     <string name="enter_name">Enter your name:</string>
     <string name="ok">OK</string>
+    <string name="move_space">Move the space ship</string>
+    <string name="kill_enemies">Kill the enemies</string>
+    <string name="take_gifts">Take the gifts</string>
+    <string name="finish_tutorial">Finish!</string>
+    <string name="exit_str">Are you sure you want to exit ?</string>
+    <string name="yes_str">Yes</string>
+    <string name="no_str">No</string>
+    <string name="level_two">level 2</string>
+    <string name="level_three">level 3</string>
 
 
 </resources>

@@ -12,4 +12,13 @@
     <string name="end_game_score">הניקוד שלך הוא:</string>
     <string name="enter_name">הכנס את השם שלך:</string>
     <string name="ok">אישור</string>
+    <string name="move_space">הזז את החללית</string>
+    <string name="kill_enemies">הרוג את האוייבים</string>
+    <string name="take_gifts">קח את המתנות</string>
+    <string name="finish_tutorial">כל הכבוד!</string>
+    <string name="exit_str">האם אתה בטוח שאתה רוצה לצאת?</string>
+    <string name="yes_str">כן</string>
+    <string name="no_str">לא</string>
+    <string name="level_two">שלב שני</string>
+    <string name="level_three">שלב שלישי</string>
 </resources>

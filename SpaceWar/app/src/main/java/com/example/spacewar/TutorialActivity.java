@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -77,8 +78,6 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_BackgroundTwo = findViewById(R.id.background_two);
         m_SkipBtn = findViewById(R.id.skip_btn);
 
-        m_TutorialTv.setText("Move the space ship");
-
         //Set listeners
         m_Player.setOnTouchListener(this);
         m_SkipBtn.setOnClickListener(this);
@@ -131,6 +130,8 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_EnemiesKilledCounter = 0;
         m_PlayerMovedCounter = 0;
 
+        m_TutorialTv.setText(getResources().getString(R.string.move_space) +"\n" + m_PlayerMovedCounter + "/4");
+
         m_Timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -144,8 +145,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                             sendGift();
                         if(m_IsKnowToTakeGift) {
                             m_Timer.cancel();
-                            Intent intent = new Intent(TutorialActivity.this, GameActivity.class);
+                            Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
                             startActivity(intent);
+                            TutorialActivity.this.finish();
                         }
                     }
                 });
@@ -155,20 +157,18 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event)
-    {
+    public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 m_XDelta = (int) (m_Player.getX() - event.getRawX());
                 m_YDelta = (int) (m_Player.getY() - event.getRawY());
                 m_LastAction = MotionEvent.ACTION_DOWN;
-
                 break;
 
             case MotionEvent.ACTION_MOVE:
                 if (event.getRawX() + m_XDelta > 0 && event.getRawX() + m_XDelta < m_ScreenSizeX - m_Player.getWidth())
                     m_Player.setX(event.getRawX() + m_XDelta);
-                if (event.getRawY() + m_YDelta > 0 && event.getRawY() + m_YDelta < m_ScreenSizeY - m_Player.getHeight())
+                if (event.getRawY() + m_YDelta > m_ScreenSizeY/4 && event.getRawY() + m_YDelta < m_ScreenSizeY - m_Player.getHeight())
                     m_Player.setY(event.getRawY() + m_YDelta);
 
                 m_LastAction = MotionEvent.ACTION_MOVE;
@@ -177,16 +177,17 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                 m_PlayerRect.top = (int)m_Player.getY();
                 m_PlayerRect.right = (int)m_Player.getX()+m_Player.getWidth();
                 m_PlayerRect.bottom = (int)m_Player.getY()+m_Player.getHeight();
-
                 break;
 
             case MotionEvent.ACTION_UP:
                 if(!m_IsKnowToMove) {
                     m_PlayerMovedCounter++;
+                    m_TutorialTv.setText(getResources().getString(R.string.move_space) + "\n" + m_PlayerMovedCounter + "/4");
+
                     if(m_PlayerMovedCounter == 4)
                     {
                         m_IsKnowToMove = true;
-                        m_TutorialTv.setText("Kill the Enemy");
+                        m_TutorialTv.setText(getResources().getString(R.string.kill_enemies) +"\n" + m_EnemiesKilledCounter + "/3");
                     }
                 }
                 break;
@@ -205,6 +206,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
             case R.id.skip_btn:
                 Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
                 startActivity(intent);
+                this.finish();
         }
     }
 
@@ -278,9 +280,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
             if (!m_IsKnowToKill) {
                 m_EnemiesKilledCounter++;
+                m_TutorialTv.setText(getResources().getString(R.string.kill_enemies) + "\n" + m_EnemiesKilledCounter + "/3");
                 if (m_EnemiesKilledCounter == 3) {
                     m_IsKnowToKill = true;
-                    m_TutorialTv.setText("Take the gifts");
+                    m_TutorialTv.setText(getResources().getString(R.string.take_gifts)+"\n" + m_GiftsCollectedCounter + "/3");
                 }
             }
         }
@@ -299,9 +302,11 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
             if(!m_IsKnowToTakeGift) {
                 m_GiftsCollectedCounter++;
+                m_TutorialTv.setText(getResources().getString(R.string.take_gifts) + "\n" + m_GiftsCollectedCounter + "/3");
+
                 if(m_GiftsCollectedCounter == 3) {
                     m_IsKnowToTakeGift = true;
-                    m_TutorialTv.setText("Finish!");
+                    m_TutorialTv.setText(getResources().getString(R.string.finish_tutorial));
                 }
             }
         }

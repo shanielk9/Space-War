@@ -34,56 +34,74 @@
             android:layout_gravity="left|top"
             android:gravity="center"
             android:layout_marginTop="-10dp"
-            android:paddingRight="40dp"
-            android:paddingLeft="10dp"
+            android:textAlignment="center"
             android:text="@string/score"
             android:textColor="@color/black"
             android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/home_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/ic_home"/>
+        <TextView
+            android:id="@+id/next_level_tv"
+            android:layout_width="140dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_marginTop="-10dp"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/pause_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="20dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="60dp"
-            android:background="@drawable/ic_paused"/>
 
+
+        <LinearLayout
+            android:id="@+id/linear_settings_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp">
+
+            <Button
+                android:id="@+id/home_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_home"/>
 
         <ImageView
             android:id="@+id/heart_one"
             android:layout_width="30dp"
+            android:layout_gravity="center"
             android:layout_height="30dp"
-            android:layout_gravity="center|top"
-            android:layout_marginTop="25dp"
+            android:layout_marginLeft="80dp"
             android:src="@drawable/ic_hearts"/>
 
         <ImageView
             android:id="@+id/heart_two"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_gravity="center|top"
-            android:layout_marginTop="25dp"
-            android:layout_marginStart="40dp"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
             android:src="@drawable/ic_hearts"/>
 
         <ImageView
             android:id="@+id/heart_three"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_gravity="center|top"
-            android:layout_marginTop="25dp"
-            android:layout_marginStart="80dp"
+            android:layout_marginLeft="10dp"
+            android:layout_gravity="center"
             android:src="@drawable/ic_hearts"/>
+
+
+            <Button
+                android:id="@+id/pause_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="80dp"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_paused"/>
+
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/broken_heart"
@@ -100,19 +118,20 @@
 
         <ImageView
             android:id="@+id/player_imageView"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_gravity="bottom"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="60dp"
             android:src="@drawable/ic_battleship1"/>
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="120dp"
+            android:layout_width="10dp"
+            android:layout_height="50dp"
             android:id="@+id/shot_imageView"
             android:outlineSpotShadowColor="@color/black"
             android:layout_marginBottom="60dp"
             android:layout_gravity="center|bottom"
-            android:src="@drawable/laser_blue" />
+            android:src="@drawable/laser_blue"/>
 
 
         <!--                gift-->
@@ -129,24 +148,43 @@
 
         <ImageView
             android:id="@+id/enemy_one_imageView"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@drawable/ic_alien"/>
 
         <ImageView
             android:id="@+id/enemy_two_imageView"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:visibility="invisible"
-            android:src="@drawable/ic_golem"/>
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_alien"/>
 
 
         <ImageView
             android:id="@+id/enemy_three_imageView"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:visibility="invisible"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_alien"/>
+
+        <ImageView
+            android:id="@+id/enemy_four_imageView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_golem"/>
+
+        <ImageView
+            android:id="@+id/enemy_five_imageView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
             android:src="@drawable/ic_octopus"/>
+
+        <ImageView
+            android:id="@+id/enemy_six_imageView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_inhabitants"/>
 
     </FrameLayout>
 
