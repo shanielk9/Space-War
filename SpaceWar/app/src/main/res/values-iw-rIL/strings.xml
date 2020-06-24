@@ -19,6 +19,9 @@
     <string name="exit_str">האם אתה בטוח שאתה רוצה לצאת?</string>
     <string name="yes_str">כן</string>
     <string name="no_str">לא</string>
-    <string name="level_two">שלב שני</string>
-    <string name="level_three">שלב שלישי</string>
+    <string name="level_two">שלב 2</string>
+    <string name="level_three">שלב 3</string>
+    <string name="level_one">שלב 1</string>
+    <string name="enter_your_name_msg">בבקשה הכנס את השם שלך</string>
+    <string name="avoid_asteroids">התחמק מהאסטרואידים</string>
 </resources>

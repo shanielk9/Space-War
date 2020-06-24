@@ -27,8 +27,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     ImageView m_Enemy;
     ImageView m_Gift;
     ImageView m_Shots;
+    ImageView m_Asteroid;
     Rect m_PlayerRect;
     Rect m_EnemyRect;
+    Rect m_AsteroidRect;
     Rect m_GiftRect;
     Rect m_ShotsRect;
     Button m_SkipBtn;
@@ -40,7 +42,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private boolean m_IsKnowToMove;
     private boolean m_IsKnowToKill;
     private boolean m_IsKnowToTakeGift;
+    private boolean m_IsKnowToAvoidAsteroid;
     private int m_GiftsCollectedCounter;
+    private int m_AsteroidsPassedCounter;
     private int m_EnemiesKilledCounter;
     private int m_PlayerMovedCounter;
 
@@ -53,6 +57,8 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private Handler m_Handler = new Handler();
     private int m_EnemyX;
     private int m_EnemyY;
+    private int m_AsteroidX;
+    private int m_AsteroidY;
     private  int m_GiftX;
     private  int m_GiftY;
 
@@ -71,6 +77,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_FrameLayout = findViewById(R.id.frame_layout);
         m_TutorialTv = findViewById(R.id.tutorial_tv);
         m_Enemy = findViewById(R.id.enemy_imageView);
+        m_Asteroid = findViewById(R.id.asteroid_imageView);
         m_Player = findViewById(R.id.player_imageView);
         m_Shots = findViewById(R.id.shot_imageView);
         m_Gift = findViewById(R.id.gift_imageView);
@@ -88,14 +95,21 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
         //Set enemy location
         m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
-        m_EnemyY = - 200;
+        m_EnemyY = -200;
         m_Enemy.setX(m_EnemyX);
         m_Enemy.setY(m_EnemyY);
         m_EnemyRect = new Rect(m_EnemyX,m_EnemyY,m_EnemyX+m_Enemy.getWidth(),m_EnemyY+m_Enemy.getHeight());
 
+        //Set asteroid location
+        m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
+        m_AsteroidY = -200;
+        m_Asteroid.setX(m_AsteroidX);
+        m_Asteroid.setY(m_AsteroidY);
+        m_AsteroidRect = new Rect(m_AsteroidX,m_AsteroidY,m_AsteroidX+m_Asteroid.getWidth(),m_AsteroidY+m_Asteroid.getHeight());
+
         //set gift location
         m_GiftX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Gift.getWidth()));
-        m_GiftY = - 200;
+        m_GiftY = -200;
         m_Gift.setX(m_GiftX);
         m_Gift.setY(m_GiftY);
         m_GiftRect = new Rect(m_GiftX,m_GiftY,m_GiftX+m_Gift.getWidth(),m_GiftY+m_Gift.getHeight());
@@ -126,7 +140,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_IsKnowToMove = false;
         m_IsKnowToKill = false;
         m_IsKnowToTakeGift = false;
+        m_IsKnowToAvoidAsteroid = false;
         m_GiftsCollectedCounter = 0;
+        m_AsteroidsPassedCounter = 0;
         m_EnemiesKilledCounter = 0;
         m_PlayerMovedCounter = 0;
 
@@ -142,11 +158,14 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                         if(m_IsKnowToMove)
                             moveEnemies();
                         if(m_IsKnowToKill)
+                            moveAsteroid();
+                        if(m_IsKnowToAvoidAsteroid)
                             sendGift();
                         if(m_IsKnowToTakeGift) {
                             m_Timer.cancel();
                             Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
                             startActivity(intent);
+                            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                             TutorialActivity.this.finish();
                         }
                     }
@@ -168,7 +187,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
             case MotionEvent.ACTION_MOVE:
                 if (event.getRawX() + m_XDelta > 0 && event.getRawX() + m_XDelta < m_ScreenSizeX - m_Player.getWidth())
                     m_Player.setX(event.getRawX() + m_XDelta);
-                if (event.getRawY() + m_YDelta > m_ScreenSizeY/4 && event.getRawY() + m_YDelta < m_ScreenSizeY - m_Player.getHeight())
+                if (event.getRawY() + m_YDelta > m_ScreenSizeY/2 && event.getRawY() + m_YDelta < m_ScreenSizeY - m_Player.getHeight())
                     m_Player.setY(event.getRawY() + m_YDelta);
 
                 m_LastAction = MotionEvent.ACTION_MOVE;
@@ -206,6 +225,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
             case R.id.skip_btn:
                 Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();
         }
     }
@@ -233,7 +253,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private void sendGift() {
 
         checkIfTakeGifts();
-        m_GiftY += m_ScreenSizeY/1000;
+        m_GiftY += m_ScreenSizeY/400;
         if(m_GiftY > m_ScreenSizeY)
         {
             m_GiftY = -40;
@@ -267,6 +287,34 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     }
 
+    private void moveAsteroid() {
+
+        m_AsteroidY += m_ScreenSizeY/400;
+        if(m_AsteroidY > m_ScreenSizeY)
+        {
+            m_AsteroidY = -40;
+            m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
+
+            if (!m_IsKnowToAvoidAsteroid) {
+                m_AsteroidsPassedCounter++;
+                m_TutorialTv.setText(getResources().getString(R.string.avoid_asteroids) + "\n" + m_AsteroidsPassedCounter + "/2");
+                if (m_AsteroidsPassedCounter == 2) {
+                    m_IsKnowToAvoidAsteroid = true;
+                    m_TutorialTv.setText(getResources().getString(R.string.take_gifts) + "\n" + m_GiftsCollectedCounter + "/3");
+                }
+            }
+
+        }
+        m_Asteroid.setX(m_AsteroidX);
+        m_Asteroid.setY(m_AsteroidY);
+
+        m_AsteroidRect.left = m_AsteroidX;
+        m_AsteroidRect.top = m_AsteroidY;
+        m_AsteroidRect.right = m_AsteroidX+m_Asteroid.getWidth();
+        m_AsteroidRect.bottom = m_AsteroidY+m_Asteroid.getHeight();
+
+    }
+
     private void checkIfHitEnemies() {
         if (Rect.intersects(m_ShotsRect, m_EnemyRect)) {
             m_EnemyY = -300;
@@ -283,7 +331,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                 m_TutorialTv.setText(getResources().getString(R.string.kill_enemies) + "\n" + m_EnemiesKilledCounter + "/3");
                 if (m_EnemiesKilledCounter == 3) {
                     m_IsKnowToKill = true;
-                    m_TutorialTv.setText(getResources().getString(R.string.take_gifts)+"\n" + m_GiftsCollectedCounter + "/3");
+                    m_TutorialTv.setText(getResources().getString(R.string.avoid_asteroids)+"\n" + m_AsteroidsPassedCounter + "/2");
                 }
             }
         }

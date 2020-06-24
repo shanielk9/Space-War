@@ -4,19 +4,34 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder> {
 
     private List<PlayerCard> players;
+    private List<Integer> MedalResId;
 
     public PlayerAdapter(List<PlayerCard> players) {
         this.players = players;
+        this.MedalResId = new ArrayList<>();
+
+        MedalResId.add(R.drawable.ic_first);
+        MedalResId.add(R.drawable.ic_second_prize);
+        MedalResId.add(R.drawable.ic_third_prize);
+        MedalResId.add(R.drawable.ic_four);
+        MedalResId.add(R.drawable.ic_five);
+        MedalResId.add(R.drawable.ic_six);
+        MedalResId.add(R.drawable.ic_seven);
+        MedalResId.add(R.drawable.ic_eight);
+        MedalResId.add(R.drawable.ic_nine);
+        MedalResId.add(R.drawable.ic_ten);
     }
 
     @NonNull
@@ -31,8 +46,14 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.PlayerView
     public void onBindViewHolder(@NonNull PlayerViewHolder holder, int position) {
         PlayerCard player = players.get(position);
         holder.name.setText(player.get_Name());
-        holder.score.setText(player.get_Score()+"");
-        holder.medal.setImageResource(player.get_MedalResId());
+        if(player.get_Score() == 0)
+        {
+            holder.score.setText("-");
+        }
+        else{
+            holder.score.setText(player.get_Score()+"");
+        }
+        holder.medal.setImageResource(MedalResId.get(position));
     }
 
     @Override
@@ -51,7 +72,5 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.PlayerView
             score = itemView.findViewById(R.id.Player_score_text_view);
             medal = itemView.findViewById(R.id.medal_icon);
         }
-
-
     }
 }

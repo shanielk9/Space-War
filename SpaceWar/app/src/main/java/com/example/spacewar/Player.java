@@ -5,7 +5,8 @@ public class Player extends GameItem {
     private int lives;
 
     public Player() {
-        score = 0;
+        super(0);
+        score = 10;
         lives = 3;
     }
 

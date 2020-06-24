@@ -3,12 +3,10 @@ package com.example.spacewar;
 public class PlayerCard {
     private int m_Score;
     private String m_Name;
-    private int m_MedalResID;
 
-    public PlayerCard(int score, String name, int medal) {
+    public PlayerCard(int score, String name) {
         this.m_Score = score;
         this.m_Name = name;
-        this.m_MedalResID = medal;
     }
 
     public int get_Score() {
@@ -17,14 +15,6 @@ public class PlayerCard {
 
     public String get_Name() {
         return m_Name;
-    }
-
-    public int get_MedalResId() {
-        return m_MedalResID;
-    }
-
-    public void set_MedalResID(int medal) {
-        this.m_MedalResID = medal;
     }
 
     public void set_Score(int score) {

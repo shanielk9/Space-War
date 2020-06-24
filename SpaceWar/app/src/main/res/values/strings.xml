@@ -27,8 +27,11 @@
     <string name="exit_str">Are you sure you want to exit ?</string>
     <string name="yes_str">Yes</string>
     <string name="no_str">No</string>
-    <string name="level_two">level 2</string>
-    <string name="level_three">level 3</string>
+    <string name="level_two">Level 2</string>
+    <string name="level_three">Level 3</string>
+    <string name="level_one">Level 1</string>
+    <string name="enter_your_name_msg">Please enter your name</string>
+    <string name="avoid_asteroids">Avoid the asteroids</string>
 
 
 </resources>

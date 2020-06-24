@@ -57,6 +57,7 @@
                 android:textColor="@color/white"
                 android:fontFamily="@font/aldrich"
                 android:textSize="30dp"
+                android:id="@+id/score_text_view"
                 android:layout_marginTop="10dp"/>
 
             <TextView
@@ -69,6 +70,7 @@
                 android:layout_marginTop="20dp"/>
 
             <EditText
+                android:id="@+id/name_edit_text"
                 android:layout_width="260dp"
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
@@ -83,7 +85,7 @@
         </LinearLayout>
 
     <Button
-        android:id="@+id/play_game_btn"
+        android:id="@+id/ok_btn"
         android:layout_width="120dp"
         android:layout_height="100dp"
         android:background="@drawable/main_custom_btn"

@@ -19,7 +19,7 @@
         android:scaleType="fitXY"
         android:outlineSpotShadowColor="@color/black"
         android:outlineAmbientShadowColor="@color/black"
-        android:src="@drawable/tutorial_patterns"/>
+        android:src="@drawable/tutorial_pattern"/>
 
 
     <ImageView
@@ -29,7 +29,7 @@
         android:id="@+id/background_two"
         android:outlineSpotShadowColor="@color/black"
         android:outlineAmbientShadowColor="@color/black"
-        android:src="@drawable/tutorial_patterns"/>
+        android:src="@drawable/tutorial_pattern"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -46,6 +46,14 @@
         android:shadowColor="@color/white"/>
 
 
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/asteroid_imageView"
+        android:outlineSpotShadowColor="@color/black"
+        android:layout_gravity="center|top"
+        android:src="@drawable/ic_asteroid"/>
 
     <ImageView
         android:layout_width="40dp"
@@ -73,13 +81,13 @@
         android:src="@drawable/laser_blue" />
 
     <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:id="@+id/player_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_marginBottom="60dp"
         android:layout_gravity="center|bottom"
-        android:src="@drawable/ic_battleship1" />
+        android:src="@drawable/spaceship_orange" />
 
     <Button
         android:layout_width="100dp"
