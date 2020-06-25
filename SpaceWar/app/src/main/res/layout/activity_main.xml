@@ -34,10 +34,10 @@
 
         <ImageView
             android:layout_width="350dp"
-            android:layout_height="280dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="300dp"
+            android:layout_marginTop="20dp"
             android:id="@+id/logo_image_view"
-            android:background="@drawable/app_logo" />
+            android:background="@drawable/app_logo_new" />
 
 
     </LinearLayout>
@@ -60,6 +60,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
+            android:layout_marginTop="15dp"
             android:id="@+id/layout_buttons">
 
             <Button
@@ -94,7 +95,7 @@
         <pl.droidsonroids.gif.GifImageView
             android:layout_width="220dp"
             android:layout_height="220dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="10dp"
             android:layout_gravity="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

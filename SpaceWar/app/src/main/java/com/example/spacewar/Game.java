@@ -7,9 +7,9 @@ public class Game {
     private static final int ENEMY_ONE_VALUE = 20;
     private static final int ENEMY_TWO_VALUE = 20;
     private static final int ENEMY_THREE_VALUE = 20;
-    private static final int ENEMY_FOUR_VALUE = 20;
-    private static final int ENEMY_FIVE_VALUE = 20;
-    private static final int ENEMY_SIX_VALUE = 20;
+    private static final int ENEMY_FOUR_VALUE = 30;
+    private static final int ENEMY_FIVE_VALUE = 40;
+    private static final int ENEMY_SIX_VALUE = 50;
 
 
     // Objects

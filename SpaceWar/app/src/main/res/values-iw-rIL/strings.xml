@@ -24,4 +24,5 @@
     <string name="level_one">שלב 1</string>
     <string name="enter_your_name_msg">בבקשה הכנס את השם שלך</string>
     <string name="avoid_asteroids">התחמק מהאסטרואידים</string>
+    <string name="collision_alert_tutorial">הזהר!</string>
 </resources>

@@ -3,13 +3,25 @@ package com.example.spacewar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.animation.ValueAnimator;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -61,6 +73,16 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private int m_AsteroidY;
     private  int m_GiftX;
     private  int m_GiftY;
+
+    //music and vibrate;
+    private MusicService mServ;
+    HomeWatcher mHomeWatcher;
+    private boolean mIsBound = false;
+    private boolean mIsMusic,mIsVibrate,mIsSound;
+    private Vibrator v;
+
+    //animations
+    private Animation animationBlink;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +158,41 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         });
         animator.start();
 
+        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        //initialize animation
+        animationBlink = AnimationUtils.loadAnimation(this,R.anim.hit_spaceship_blink);
+
+
+        //getExtras
+        Intent intent = getIntent();
+        mIsMusic = intent.getBooleanExtra("Music",false);
+        mIsVibrate = intent.getBooleanExtra("Vibrate",false);
+        mIsSound = intent.getBooleanExtra("Sound",false);
+
+        //Music background
+        doBindService();
+        Intent music = new Intent();
+        music.setClass(this, MusicService.class);
+        startService(music);
+
+        mHomeWatcher = new HomeWatcher(this);
+        mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
+            @Override
+            public void onHomePressed() {
+                if (mServ != null) {
+                    mServ.pauseMusic();
+                }
+            }
+            @Override
+            public void onHomeLongPressed() {
+                if (mServ != null) {
+                    mServ.pauseMusic();
+                }
+            }
+        });
+        mHomeWatcher.startWatch();
+
         //set boolean
         m_IsKnowToMove = false;
         m_IsKnowToKill = false;
@@ -164,6 +221,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                         if(m_IsKnowToTakeGift) {
                             m_Timer.cancel();
                             Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
+                            intent.putExtra("Sound",mIsSound);
+                            intent.putExtra("Vibrate",mIsVibrate);
+                            intent.putExtra("Music",mIsMusic);
                             startActivity(intent);
                             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                             TutorialActivity.this.finish();
@@ -223,7 +283,12 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     {
         switch (v.getId()) {
             case R.id.skip_btn:
+                vibrate();
+                playSound(R.raw.click_electronic);
                 Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
+                intent.putExtra("Sound",mIsSound);
+                intent.putExtra("Vibrate",mIsVibrate);
+                intent.putExtra("Music",mIsMusic);
                 startActivity(intent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();
@@ -271,6 +336,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private void moveEnemies()
     {
         checkIfHitEnemies();
+        checkIfEnemyPlayerCollision();
         m_EnemyY += m_ScreenSizeY/500;
         if(m_EnemyY > m_ScreenSizeY)
         {
@@ -287,8 +353,29 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     }
 
-    private void moveAsteroid() {
+    private void checkIfEnemyPlayerCollision()
+    {
+        if (Rect.intersects(m_PlayerRect,m_EnemyRect)){
+            vibrate();
+            playSound(R.raw.crash_sound);
+            m_EnemyY = -300;
+            m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
+            m_Enemy.setX(m_EnemyX);
+            m_Enemy.setY(m_EnemyY);
 
+            m_EnemyRect.left = m_EnemyX;
+            m_EnemyRect.top = m_EnemyY;
+            m_EnemyRect.right = m_EnemyX+m_Enemy.getWidth();
+            m_EnemyRect.bottom = m_EnemyY+m_Enemy.getHeight();
+
+            Toast.makeText(TutorialActivity.this,getResources().getString(R.string.collision_alert_tutorial),Toast.LENGTH_SHORT).show();
+            m_Player.startAnimation(animationBlink);
+
+        }
+    }
+
+    private void moveAsteroid() {
+        checkifAsteroidPlayerCollision();
         m_AsteroidY += m_ScreenSizeY/400;
         if(m_AsteroidY > m_ScreenSizeY)
         {
@@ -315,8 +402,29 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     }
 
+    private void checkifAsteroidPlayerCollision()
+    {
+        if (Rect.intersects(m_PlayerRect,m_AsteroidRect)){
+            vibrate();
+            playSound(R.raw.crash_sound);
+            m_AsteroidY = -40;
+            m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
+            m_Asteroid.setX(m_AsteroidX);
+            m_Asteroid.setY(m_AsteroidY);
+
+            m_AsteroidRect.left = m_AsteroidX;
+            m_AsteroidRect.top = m_AsteroidY;
+            m_AsteroidRect.right = m_AsteroidX+m_Asteroid.getWidth();
+            m_AsteroidRect.bottom = m_AsteroidY+m_Asteroid.getHeight();
+
+            Toast.makeText(TutorialActivity.this,getResources().getString(R.string.collision_alert_tutorial),Toast.LENGTH_SHORT).show();
+            m_Player.startAnimation(animationBlink);
+        }
+    }
+
     private void checkIfHitEnemies() {
         if (Rect.intersects(m_ShotsRect, m_EnemyRect)) {
+            playSound(R.raw.explode);
             m_EnemyY = -300;
             m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
 
@@ -342,6 +450,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
         if(Rect.intersects(m_GiftRect,m_PlayerRect))
         {
+            playSound(R.raw.gift_sound);
             m_GiftY = ((int) Math.floor(Math.random() * (1000 - 100))) * -1;
             m_GiftX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Gift.getWidth()));
 
@@ -357,6 +466,143 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                     m_TutorialTv.setText(getResources().getString(R.string.finish_tutorial));
                 }
             }
+        }
+    }
+
+    private ServiceConnection Scon = new ServiceConnection(){
+
+        public void onServiceConnected(ComponentName name, IBinder
+                binder) {
+            mServ = ((MusicService.ServiceBinder)binder).getService();
+            if(!mIsMusic && mServ != null)
+            {
+                mServ.stopMusic();
+            }
+            else
+                {
+                    mServ.changeMusic(R.raw.app_music_2);
+                }
+        }
+
+        public void onServiceDisconnected(ComponentName name) {
+            mServ = null;
+        }
+    };
+
+    void doBindService(){
+        bindService(new Intent(this,MusicService.class),
+                Scon, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+
+    void doUnbindService()
+    {
+        if(mIsBound)
+        {
+            unbindService(Scon);
+            mIsBound = false;
+        }
+    }
+
+
+    public boolean dispatchKeyEvent(KeyEvent event) {
+
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_BACK:
+                    return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    protected void onPause() {
+        super.onPause();
+        try {
+
+            m_Timer.cancel();
+            m_Timer = null;
+
+        } catch (Exception e) { }
+
+        PowerManager pm = (PowerManager)
+                getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn = false;
+        if (pm != null) {
+            isScreenOn = pm.isScreenOn();
+        }
+
+        if (!isScreenOn) {
+            if (mServ != null && mIsMusic) {
+                mServ.pauseMusic();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        m_Timer = new Timer();
+        m_Timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                m_Handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        createShots();
+                        if (m_IsKnowToMove)
+                            moveEnemies();
+                        if (m_IsKnowToKill)
+                            moveAsteroid();
+                        if (m_IsKnowToAvoidAsteroid)
+                            sendGift();
+                        if (m_IsKnowToTakeGift) {
+                            m_Timer.cancel();
+                            Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
+                            intent.putExtra("Sound", mIsSound);
+                            intent.putExtra("Vibrate", mIsVibrate);
+                            intent.putExtra("Music", mIsMusic);
+                            startActivity(intent);
+                            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                            TutorialActivity.this.finish();
+                        }
+                    }
+                });
+            }
+        }, 0, 20);
+
+        //music
+        if (mServ != null&& mIsMusic) {
+            mServ.resumeMusic();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //music
+        doUnbindService();
+        Intent music = new Intent();
+        music.setClass(this,MusicService.class);
+        stopService(music);
+    }
+
+    private void vibrate() {
+        if(mIsVibrate)
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                v.vibrate(500);
+            }
+        }
+    }
+
+    private void playSound(int sound) {
+        if(mIsSound){
+            MediaPlayer pressSound = MediaPlayer.create(TutorialActivity.this, sound);
+            pressSound.setVolume(30,30);
+            pressSound.start();
         }
     }
 }

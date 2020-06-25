@@ -32,6 +32,7 @@
     <string name="level_one">Level 1</string>
     <string name="enter_your_name_msg">Please enter your name</string>
     <string name="avoid_asteroids">Avoid the asteroids</string>
+    <string name="collision_alert_tutorial">Watch out !</string>
 
 
 </resources>

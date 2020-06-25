@@ -5,7 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -50,13 +54,24 @@ public class GameOverActivity extends AppCompatActivity implements View.OnClickL
     String score;
     List<PlayerCard> top10Players;
 
+    private boolean mIsMusic,mIsVibrate,mIsSound;
+    Vibrator v;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_over);
 
+        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        //get Extras
         Intent intent = getIntent();
         score = String.valueOf(intent.getIntExtra("Score",0));
+        mIsMusic = intent.getBooleanExtra("Music",false);
+        mIsVibrate = intent.getBooleanExtra("Vibrate",false);
+        mIsSound = intent.getBooleanExtra("Sound",false);
+
+        playSound(R.raw.game_over);
 
         m_NameEt = findViewById(R.id.name_edit_text);
         m_OkBtn = findViewById(R.id.ok_btn);
@@ -70,8 +85,30 @@ public class GameOverActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId())
         {
-            case R.id.ok_btn:
+            case R.id.ok_btn: {
                 checkIfNeedToInitializeScoreOnSP();
+                playSound(R.raw.click_electronic);
+                vibrate();
+            }
+        }
+    }
+
+    private void vibrate() {
+        if(mIsVibrate)
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                v.vibrate(500);
+            }
+        }
+    }
+
+    private void playSound(int sound) {
+        if(mIsSound){
+            MediaPlayer pressSound = MediaPlayer.create(GameOverActivity.this, sound);
+            pressSound.setVolume(30,30);
+            pressSound.start();
         }
     }
 
@@ -91,10 +128,13 @@ public class GameOverActivity extends AppCompatActivity implements View.OnClickL
                     }
                 });
                 addNewPreference();
-                Intent intent = new Intent(GameOverActivity.this, HighScoreActivity.class);
-                startActivity(intent);
-                this.finish();
             }
+
+            Intent intent = new Intent(GameOverActivity.this, HighScoreActivity.class);
+            intent.putExtra("Music", mIsMusic);
+            intent.putExtra("CallIntent","GameOver");
+            startActivity(intent);
+            this.finish();
         }
             else
             {

@@ -4,14 +4,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.animation.ValueAnimator;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.view.Display;
@@ -36,7 +41,7 @@ import java.util.TimerTask;
 public class RunGameActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener {
 
     // Static vars
-    private static final int MAX_ENEMY_LVL_ONE = 5;
+    private static final int MAX_ENEMY_LVL_ONE = 20;
     private static final int MAX_ENEMY_LVL_TWO = 35;
     private static final int MAX_ENEMY_LVL_THREE = 50;
 
@@ -86,6 +91,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
     //music and vibrate
     Vibrator v;
+    private MusicService mServ;
+    HomeWatcher mHomeWatcher;
+    private boolean mIsBound = false;
+    private boolean mIsMusic,mIsVibrate,mIsSound;
 
     // Timer and handler
     private Timer m_Timer = new Timer();
@@ -174,8 +183,35 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_FadeInOutAnim.setRepeatCount(0);
         m_FadeInOutAnim.setRepeatMode(Animation.REVERSE);
 
+        //getExtras
+        Intent intent = getIntent();
+        mIsMusic = intent.getBooleanExtra("Music",false);
+        mIsVibrate = intent.getBooleanExtra("Vibrate",false);
+        mIsSound = intent.getBooleanExtra("Sound",false);
+
         //set music and vibrate
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        doBindService();
+        Intent music = new Intent();
+        music.setClass(this, MusicService.class);
+        startService(music);
+
+        mHomeWatcher = new HomeWatcher(this);
+        mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
+            @Override
+            public void onHomePressed() {
+                if (mServ != null) {
+                    mServ.pauseMusic();
+                }
+            }
+            @Override
+            public void onHomeLongPressed() {
+                if (mServ != null) {
+                    mServ.pauseMusic();
+                }
+            }
+        });
+        mHomeWatcher.startWatch();
 
         m_Timer.schedule(new TimerTask() {
             @Override
@@ -248,8 +284,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
         if(m_Game.get_CurrLevel() > 2)
         {
+
             setEnemyState(m_EnemySixIv,m_Game.get_Enemy_six(),-1000);
             setAsteroidState(m_AsteroidThreeIv,m_Game.get_Asteroid_Three(),-500);
+
         }
     }
 
@@ -313,20 +351,25 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                         m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
                         initializeNextLevel();
                         handelOnPauseBtnClick();
+                        mServ.changeMusic(R.raw.stage_two_music);
                         break;
                     }
                 case 2:
                     if (m_Game.get_EnemiesCounter() >= MAX_ENEMY_LVL_TWO) {
                         m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
                         initializeNextLevel();
-                        m_LevelTv.setText(getResources().getString(R.string.level_three));
                         handelOnPauseBtnClick();
+                        mServ.changeMusic(R.raw.stage_three_music);
                         break;
                     }
                 case 3:
                     if (m_Game.get_EnemiesCounter() >= MAX_ENEMY_LVL_THREE) {
                         Intent intent = new Intent(RunGameActivity.this, WinningActivity.class);
                         intent.putExtra("Score",m_Game.m_Player.getScore());
+                        intent.putExtra("Sound",mIsSound);
+                        intent.putExtra("Vibrate",mIsVibrate);
+                        intent.putExtra("Music",mIsMusic);
+                        mServ.pauseMusic();
                         startActivity(intent);
                         this.finish();
                     }
@@ -378,9 +421,13 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             switch (v.getId()) {
                 case R.id.pause_btn:
                     handelOnPauseBtnClick();
+                    playSound(R.raw.click_electronic);
+                    vibrate();
                     break;
                 case R.id.home_btn:
                     handelOnHomeBtnClick();
+                    playSound(R.raw.click_electronic);
+                    vibrate();
                     break;
             }
         }
@@ -476,6 +523,22 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                         });
                     }
                 }, 0, 20);
+
+                PowerManager pm = (PowerManager)
+                        getSystemService(Context.POWER_SERVICE);
+                boolean isScreenOn = false;
+                if (pm != null) {
+                    isScreenOn = pm.isScreenOn();
+                }
+
+                if (!isScreenOn) {
+                    if (mServ != null) {
+                        if(isPause)
+                            mServ.pauseMusic();
+                        else
+                            mServ.resumeMusic();
+                    }
+                }
             }
         }
     }
@@ -483,7 +546,19 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     @Override
     protected void onPause() {
         super.onPause();
-        //stop(); // todo : stop music
+        //pause music
+        PowerManager pm = (PowerManager)
+                getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn = false;
+        if (pm != null) {
+            isScreenOn = pm.isScreenOn();
+        }
+
+        if (!isScreenOn) {
+            if (mServ != null && mIsMusic) {
+                mServ.pauseMusic();
+            }
+        }
 
         if (isPause == false) {
 
@@ -505,8 +580,20 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     @Override
     protected void onResume() {
         super.onResume();
-        /*mediaPlayer.release();
-        play();*/ //todo:play the music
+        //music
+        if (mServ != null && mIsMusic) {
+            mServ.resumeMusic();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //music
+        doUnbindService();
+        Intent music = new Intent();
+        music.setClass(this,MusicService.class);
+        stopService(music);
     }
 
     private void createShots()
@@ -589,7 +676,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
     private void checkIfHitEnemies(ImageView enemyIV, ValueEnemyItem enemy) {
         if (Rect.intersects(m_Game.get_Shot().getRect(), enemy.getRect())) {
-
+            playSound(R.raw.explode);
             m_Game.set_EnemiesCounter(m_Game.get_EnemiesCounter()+1);
             enemyIV.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIV.getWidth())));
             enemyIV.setY(-300);
@@ -608,6 +695,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
         if(Rect.intersects(m_Game.get_Gift().getRect(),m_Game.get_Player().getRect()))
         {
+            playSound(R.raw.gift_sound);
             m_Game.get_Gift().setSpeed(800,100);
             m_GiftIv.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - m_GiftIv.getWidth())));
             m_GiftIv.setY(((int) Math.floor(Math.random() * (1000 - 100))) * -1);
@@ -639,6 +727,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
             Intent intent = new Intent(RunGameActivity.this, GameOverActivity.class);
             intent.putExtra("Score",m_Game.m_Player.getScore());
+            intent.putExtra("Sound",mIsSound);
+            intent.putExtra("Vibrate",mIsVibrate);
+            intent.putExtra("Music",mIsMusic);
+            mServ.pauseMusic();
             startActivity(intent);
             this.finish();
         }
@@ -649,12 +741,8 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         if (m_Game.get_Player().getLives() == 2) {
             m_HeartThreeIv.setImageResource(R.drawable.ic_hearts_gray);
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            v.vibrate(1000);
-        }
+        playSound(R.raw.crash_sound);
+        vibrate();
     }
 
     private void checkIfPlayerEnemyCollision(ImageView enemyIV, ValueEnemyItem enemy)
@@ -673,6 +761,40 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         }
     }
 
+    private ServiceConnection Scon = new ServiceConnection(){
+
+        public void onServiceConnected(ComponentName name, IBinder
+                binder) {
+            mServ = ((MusicService.ServiceBinder)binder).getService();
+            if(!mIsMusic && mServ != null)
+            {
+                mServ.stopMusic();
+            }
+            else {
+                mServ.changeMusic(R.raw.stage_one_music);
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName name) {
+            mServ = null;
+        }
+    };
+
+    void doBindService(){
+        bindService(new Intent(this,MusicService.class),
+                Scon, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+
+    void doUnbindService()
+    {
+        if(mIsBound)
+        {
+            unbindService(Scon);
+            mIsBound = false;
+        }
+    }
+
     public boolean dispatchKeyEvent(KeyEvent event) {
 
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -682,6 +804,25 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    private void vibrate() {
+        if(mIsVibrate)
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                v.vibrate(500);
+            }
+        }
+    }
+
+    private void playSound(int sound) {
+        if(mIsSound){
+            MediaPlayer pressSound = MediaPlayer.create(RunGameActivity.this, sound);
+            pressSound.setVolume(30,30);
+            pressSound.start();
+        }
     }
 
 

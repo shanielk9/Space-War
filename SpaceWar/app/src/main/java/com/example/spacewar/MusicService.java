@@ -31,7 +31,7 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
     public void onCreate() {
         super.onCreate();
 
-        mPlayer = MediaPlayer.create(this, R.raw.app_music);
+        mPlayer = MediaPlayer.create(this, R.raw.main_music);
         mPlayer.setOnErrorListener(this);
 
         if (mPlayer != null) {
@@ -78,7 +78,7 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
     }
 
     public void startMusic() {
-        mPlayer = MediaPlayer.create(this, R.raw.app_music);
+        mPlayer = MediaPlayer.create(this,R.raw.main_music);
         mPlayer.setOnErrorListener(this);
 
         if (mPlayer != null) {
@@ -122,5 +122,18 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
             }
         }
         return false;
+    }
+
+    public void changeMusic(int musicID) {
+        onDestroy();
+
+        mPlayer = MediaPlayer.create(this,musicID);
+        mPlayer.setOnErrorListener(this);
+
+        if (mPlayer != null) {
+            mPlayer.setLooping(true);
+            mPlayer.setVolume(100,100);
+            mPlayer.start();
+        }
     }
 }
