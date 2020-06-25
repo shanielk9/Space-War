@@ -288,6 +288,37 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             setEnemyState(m_EnemySixIv,m_Game.get_Enemy_six(),-1000);
             setAsteroidState(m_AsteroidThreeIv,m_Game.get_Asteroid_Three(),-500);
 
+            //Change Background and set animation
+            m_BackgroundOne.setVisibility(View.GONE);
+            m_BackgroundTwo.setVisibility(View.GONE);
+            m_LevelTv.setVisibility(View.GONE);
+
+            m_FadeInOutAnim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    m_BackgroundFade.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    m_BackgroundFade.setVisibility(View.GONE);
+                    m_BackgroundOne.setImageResource(R.drawable.stage_three_pattern);
+                    m_BackgroundTwo.setImageResource(R.drawable.stage_three_pattern);
+                    m_LevelTv.setText(getResources().getString(R.string.level_three));
+
+                    m_BackgroundOne.setVisibility(View.VISIBLE);
+                    m_BackgroundTwo.setVisibility(View.VISIBLE);
+                    m_LevelTv.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+
+            m_BackgroundFade.startAnimation(m_FadeInOutAnim);
+            m_LevelTv.startAnimation(m_FadeInOutAnim);
+            m_BackgroundAnim.start();
+
         }
     }
 

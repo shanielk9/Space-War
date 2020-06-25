@@ -61,7 +61,7 @@
         android:id="@+id/enemy_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_gravity="center|top"
-        android:src="@drawable/ic_alien"/>
+        android:src="@drawable/enemy_one_anim"/>
 
     <ImageView
         android:layout_width="30dp"
