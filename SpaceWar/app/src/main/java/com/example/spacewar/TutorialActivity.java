@@ -13,6 +13,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -84,7 +85,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     //animations
     private Animation m_AnimationBlink;
+    private Animation m_AnimationFadeInOut;
     private AnimationDrawable m_EnemyOneAnim;
+    private AnimationDrawable m_AsteroidAnim;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +129,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
         //Set asteroid location
         m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
-        m_AsteroidY = -200;
+        m_AsteroidY = -400;
         m_Asteroid.setX(m_AsteroidX);
         m_Asteroid.setY(m_AsteroidY);
         m_AsteroidRect = new Rect(m_AsteroidX,m_AsteroidY,m_AsteroidX+m_Asteroid.getWidth(),m_AsteroidY+m_Asteroid.getHeight());
@@ -164,8 +167,14 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
         //initialize animation
         m_AnimationBlink = AnimationUtils.loadAnimation(this,R.anim.hit_spaceship_blink);
-        m_EnemyOneAnim =  (AnimationDrawable) m_Enemy.getDrawable();
+        m_AnimationFadeInOut = AnimationUtils.loadAnimation(this,R.anim.fade_in_out);
+
+
+        m_EnemyOneAnim = (AnimationDrawable) m_Enemy.getDrawable();
         m_EnemyOneAnim.start();
+
+        m_AsteroidAnim = (AnimationDrawable) m_Asteroid.getDrawable();
+        m_AsteroidAnim.start();
 
 
 
@@ -204,44 +213,61 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_IsKnowToKill = false;
         m_IsKnowToTakeGift = false;
         m_IsKnowToAvoidAsteroid = false;
-        m_GiftsCollectedCounter = 0;
-        m_AsteroidsPassedCounter = 0;
-        m_EnemiesKilledCounter = 0;
-        m_PlayerMovedCounter = 0;
 
-        m_TutorialTv.setText(getResources().getString(R.string.move_space) +"\n" + m_PlayerMovedCounter + "/4");
 
-        m_Timer.schedule(new TimerTask() {
+
+        new CountDownTimer(3000,1000){
+
             @Override
-            public void run() {
-                m_Handler.post(new Runnable() {
+            public void onTick(long millisUntilFinished) {
+                if(millisUntilFinished < 3000 && millisUntilFinished > 2000 )
+                    m_TutorialTv.setText("3");
+                if(millisUntilFinished < 2000 && millisUntilFinished > 1000 )
+                    m_TutorialTv.setText("2");
+                if(millisUntilFinished < 1000 )
+                    m_TutorialTv.setText("1");
+            }
+
+            @Override
+            public void onFinish() {
+                m_TutorialTv.setText(getResources().getString(R.string.move_space) +"\n" + m_PlayerMovedCounter + "/4");
+                m_GiftsCollectedCounter = 0;
+                m_AsteroidsPassedCounter = 0;
+                m_EnemiesKilledCounter = 0;
+                m_PlayerMovedCounter = 0;
+
+                m_Timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        if(m_IsLearning) {
-                            createShots();
-                            if (m_IsKnowToMove)
-                                moveEnemies();
-                            if (m_IsKnowToKill)
-                                moveAsteroid();
-                            if (m_IsKnowToAvoidAsteroid)
-                                sendGift();
-                            if (m_IsKnowToTakeGift) {
-                                Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
-                                intent.putExtra("Sound", mIsSound);
-                                intent.putExtra("Vibrate", mIsVibrate);
-                                intent.putExtra("Music", mIsMusic);
-                                startActivity(intent);
-                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                                TutorialActivity.this.finish();
-                                m_IsLearning = false;
-                                m_Timer.cancel();
+                        m_Handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(m_IsLearning) {
+                                    createShots();
+                                    if (m_IsKnowToMove)
+                                        moveEnemies();
+                                    if (m_IsKnowToKill)
+                                        moveAsteroid();
+                                    if (m_IsKnowToAvoidAsteroid)
+                                        sendGift();
+                                    if (m_IsKnowToTakeGift) {
+                                        Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
+                                        intent.putExtra("Sound", mIsSound);
+                                        intent.putExtra("Vibrate", mIsVibrate);
+                                        intent.putExtra("Music", mIsMusic);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.fade_in_out, android.R.anim.fade_out);
+                                        TutorialActivity.this.finish();
+                                        m_IsLearning = false;
+                                        m_Timer.cancel();
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
-                });
+                }, 0, 20);
             }
-        }, 0, 20);
-
+        }.start();
     }
 
     @Override
@@ -299,7 +325,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                 intent.putExtra("Vibrate",mIsVibrate);
                 intent.putExtra("Music",mIsMusic);
                 startActivity(intent);
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 TutorialActivity.this.finish();
                 m_IsLearning = false;
                 m_Timer.cancel();
@@ -369,6 +395,8 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         if (Rect.intersects(m_PlayerRect,m_EnemyRect)){
             vibrate();
             playSound(R.raw.crash_sound);
+
+
             m_EnemyY = -300;
             m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
             m_Enemy.setX(m_EnemyX);
@@ -418,6 +446,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         if (Rect.intersects(m_PlayerRect,m_AsteroidRect)){
             vibrate();
             playSound(R.raw.crash_sound);
+
             m_AsteroidY = -40;
             m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
             m_Asteroid.setX(m_AsteroidX);
@@ -479,6 +508,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
             }
         }
     }
+
 
     private ServiceConnection Scon = new ServiceConnection(){
 
@@ -579,7 +609,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                                 intent.putExtra("Vibrate", mIsVibrate);
                                 intent.putExtra("Music", mIsMusic);
                                 startActivity(intent);
-                                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                                overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_out);
                                 TutorialActivity.this.finish();
                                 m_IsLearning = false;
                                 m_Timer.cancel();

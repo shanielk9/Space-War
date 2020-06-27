@@ -137,10 +137,11 @@ public class WinningActivity extends AppCompatActivity implements View.OnClickLi
                 addNewPreference();
             }
 
-                Intent intent = new Intent(WinningActivity.this, HighScoreActivity.class);
-                intent.putExtra("CallIntent","GameOver");
-                startActivity(intent);
-                this.finish();
+            Intent intent = new Intent(WinningActivity.this, HighScoreActivity.class);
+            intent.putExtra("Music", mIsMusic);
+            intent.putExtra("CallIntent","Winning");
+            startActivity(intent);
+            this.finish();
         }
         else
         {

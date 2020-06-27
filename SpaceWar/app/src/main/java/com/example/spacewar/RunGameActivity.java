@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,9 +42,9 @@ import java.util.TimerTask;
 public class RunGameActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener {
 
     // Static vars
-    private static final int MAX_ENEMY_LVL_ONE = 20;
-    private static final int MAX_ENEMY_LVL_TWO = 35;
-    private static final int MAX_ENEMY_LVL_THREE = 50;
+    private static final int MAX_ENEMY_LVL_ONE = 2;
+    private static final int MAX_ENEMY_LVL_TWO = 2;
+    private static final int MAX_ENEMY_LVL_THREE = 4;
 
     // Screen size
     private int m_ScreenSizeX;
@@ -71,12 +72,25 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     ImageView m_HeartOneIv;
     ImageView m_HeartTwoIv;
     ImageView m_HeartThreeIv;
+    ImageView m_BrokenHeartIv;
     TextView m_ScoreTv;
     TextView m_LevelTv;
 
     // Animations vars
-    ValueAnimator m_BackgroundAnim;
-    AlphaAnimation m_FadeInOutAnim;
+    private ValueAnimator m_BackgroundMoveAnim;
+    private AlphaAnimation m_BackgroundFadeAnim;
+    private Animation m_AnimationSpaceShipBlink;
+    private Animation m_AnimationEnemyBlink;
+    private Animation m_AnimationFadeInOut;
+    private AnimationDrawable m_EnemyOneAnim;
+    private AnimationDrawable m_EnemyTwoAnim;
+    private AnimationDrawable m_EnemyThreeAnim;
+    private AnimationDrawable m_EnemyFourAnim;
+    private AnimationDrawable m_EnemyFiveAnim;
+    private AnimationDrawable m_EnemySixAnim;
+    private AnimationDrawable m_AsteroidOneAnim;
+    private AnimationDrawable m_AsteroidTwoAnim;
+    private AnimationDrawable m_AsteroidThreeAnim;
 
     //members for onTouch listener
     FrameLayout m_FrameLayout;
@@ -88,6 +102,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private boolean isPause = false;
     private boolean isMove = false;
     private boolean isPlay = true;
+    private boolean isInIntent = true;
 
     //music and vibrate
     Vibrator v;
@@ -100,7 +115,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private Timer m_Timer = new Timer();
     private Handler m_Handler = new Handler();
 
-    Game m_Game;
+    private Game m_Game;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +142,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_HeartOneIv = findViewById(R.id.heart_one);
         m_HeartTwoIv = findViewById(R.id.heart_two);
         m_HeartThreeIv = findViewById(R.id.heart_three);
+        m_BrokenHeartIv = findViewById(R.id.broken_heart);
         m_ScoreTv = findViewById(R.id.score_tv);
         m_LevelTv = findViewById(R.id.next_level_tv);
         m_BackgroundOne = findViewById(R.id.background_one);
@@ -155,11 +171,11 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_FrameLayout.setOnTouchListener(this);
 
         //Moving background animation
-        m_BackgroundAnim = ValueAnimator.ofFloat(0.0f, 1.0f);
-        m_BackgroundAnim.setRepeatCount(ValueAnimator.INFINITE);
-        m_BackgroundAnim.setInterpolator(new LinearInterpolator());
-        m_BackgroundAnim.setDuration(20000);
-        m_BackgroundAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        m_BackgroundMoveAnim = ValueAnimator.ofFloat(0.0f, 1.0f);
+        m_BackgroundMoveAnim.setRepeatCount(ValueAnimator.INFINITE);
+        m_BackgroundMoveAnim.setInterpolator(new LinearInterpolator());
+        m_BackgroundMoveAnim.setDuration(20000);
+        m_BackgroundMoveAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 final float progress = (float) animation.getAnimatedValue();
@@ -171,17 +187,35 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 m_BackgroundOne.setTranslationY(translationY - height);
             }
         });
-        m_BackgroundAnim.start();
+        m_BackgroundMoveAnim.start();
 
-        //Start animations
-        m_LevelTv.startAnimation(AnimationUtils.loadAnimation(this,R.anim.fade_in));
+
+        //initialize animation
+        m_LevelTv.startAnimation(AnimationUtils.loadAnimation(this,android.R.anim.fade_in));
+        m_AnimationSpaceShipBlink = AnimationUtils.loadAnimation(this,R.anim.hit_spaceship_blink);
+        m_AnimationEnemyBlink = AnimationUtils.loadAnimation(this,R.anim.hit_enemy_blink);
+        m_AnimationFadeInOut = AnimationUtils.loadAnimation(this,R.anim.fade_in_out);
+
+
+        m_EnemyOneAnim = (AnimationDrawable) m_EnemyOneIv.getDrawable();
+        m_EnemyTwoAnim = (AnimationDrawable) m_EnemyTwoIv.getDrawable();
+        m_EnemyThreeAnim = (AnimationDrawable) m_EnemyThreeIv.getDrawable();
+        m_EnemyFourAnim = (AnimationDrawable) m_EnemyFourIv.getDrawable();
+        m_EnemyFiveAnim = (AnimationDrawable) m_EnemyFiveIv.getDrawable();
+        m_EnemySixAnim = (AnimationDrawable) m_EnemySixIv.getDrawable();
+
+        m_AsteroidOneAnim = (AnimationDrawable) m_AsteroidOneIv.getDrawable();
+        m_AsteroidTwoAnim = (AnimationDrawable) m_AsteroidTwoIv.getDrawable();
+        m_AsteroidThreeAnim = (AnimationDrawable) m_AsteroidThreeIv.getDrawable();
+
+        startGameItemsAnimations();
 
 
         //Initialize fade in-out animation
-        m_FadeInOutAnim = new AlphaAnimation(1.0f, 0.3f);
-        m_FadeInOutAnim.setDuration(2000);
-        m_FadeInOutAnim.setRepeatCount(0);
-        m_FadeInOutAnim.setRepeatMode(Animation.REVERSE);
+        m_BackgroundFadeAnim = new AlphaAnimation(1.0f, 0.3f);
+        m_BackgroundFadeAnim.setDuration(2000);
+        m_BackgroundFadeAnim.setRepeatCount(0);
+        m_BackgroundFadeAnim.setRepeatMode(Animation.REVERSE);
 
         //getExtras
         Intent intent = getIntent();
@@ -227,6 +261,33 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
 
 
+    private void startGameItemsAnimations()
+    {
+        m_EnemyOneAnim.start();
+        m_EnemyTwoAnim.start();
+        m_EnemyThreeAnim.start();
+        m_EnemyFourAnim.start();
+        m_EnemyFiveAnim.start();
+        m_EnemySixAnim.start();
+
+        m_AsteroidOneAnim.start();
+        m_AsteroidTwoAnim.start();
+        m_AsteroidThreeAnim.start();
+    }
+
+    private void stopGameItemsAnimations()
+    {
+        m_EnemyOneAnim.stop();
+        m_EnemyTwoAnim.stop();
+        m_EnemyThreeAnim.stop();
+        m_EnemyFourAnim.stop();
+        m_EnemyFiveAnim.stop();
+        m_EnemySixAnim.stop();
+
+        m_AsteroidOneAnim.stop();
+        m_AsteroidTwoAnim.stop();
+        m_AsteroidThreeAnim.stop();
+    }
     private void initializeNextLevel() {
         m_Game.set_EnemiesCounter(0);
         m_Game.get_Player().setRect(0,0,0,0);
@@ -248,12 +309,12 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             setAsteroidState(m_AsteroidOneIv,m_Game.get_Asteroid_One(),-400);
             setAsteroidState(m_AsteroidTwoIv,m_Game.get_Asteroid_Two(),-600);
 
-            //Change Background and set animation
+            //Transition animation between levels
             m_BackgroundOne.setVisibility(View.GONE);
             m_BackgroundTwo.setVisibility(View.GONE);
             m_LevelTv.setVisibility(View.GONE);
 
-            m_FadeInOutAnim.setAnimationListener(new Animation.AnimationListener() {
+            m_BackgroundFadeAnim.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
                     m_BackgroundFade.setVisibility(View.VISIBLE);
@@ -265,6 +326,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                     m_BackgroundOne.setImageResource(R.drawable.stage_two_pattern);
                     m_BackgroundTwo.setImageResource(R.drawable.stage_two_pattern);
                     m_LevelTv.setText(getResources().getString(R.string.level_two));
+                    m_LevelTv.startAnimation(m_AnimationSpaceShipBlink);
 
                     m_BackgroundOne.setVisibility(View.VISIBLE);
                     m_BackgroundTwo.setVisibility(View.VISIBLE);
@@ -275,9 +337,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 public void onAnimationRepeat(Animation animation) {}
             });
 
-            m_BackgroundFade.startAnimation(m_FadeInOutAnim);
-            m_LevelTv.startAnimation(m_FadeInOutAnim);
-            m_BackgroundAnim.start();
+            m_BackgroundFade.startAnimation(m_BackgroundFadeAnim);
+            m_BackgroundMoveAnim.start();
+
+
 
 
         }
@@ -293,7 +356,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             m_BackgroundTwo.setVisibility(View.GONE);
             m_LevelTv.setVisibility(View.GONE);
 
-            m_FadeInOutAnim.setAnimationListener(new Animation.AnimationListener() {
+            m_BackgroundFadeAnim.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
                     m_BackgroundFade.setVisibility(View.VISIBLE);
@@ -309,15 +372,17 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                     m_BackgroundOne.setVisibility(View.VISIBLE);
                     m_BackgroundTwo.setVisibility(View.VISIBLE);
                     m_LevelTv.setVisibility(View.VISIBLE);
+
                 }
 
                 @Override
                 public void onAnimationRepeat(Animation animation) {}
             });
 
-            m_BackgroundFade.startAnimation(m_FadeInOutAnim);
-            m_LevelTv.startAnimation(m_FadeInOutAnim);
-            m_BackgroundAnim.start();
+            m_BackgroundFade.startAnimation(m_BackgroundFadeAnim);
+            m_BackgroundMoveAnim.start();
+
+
 
         }
     }
@@ -382,7 +447,8 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                         m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
                         initializeNextLevel();
                         handelOnPauseBtnClick();
-                        mServ.changeMusic(R.raw.stage_two_music);
+                        if(mIsMusic)
+                            mServ.changeMusic(R.raw.stage_two_music);
                         break;
                     }
                 case 2:
@@ -390,24 +456,33 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                         m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
                         initializeNextLevel();
                         handelOnPauseBtnClick();
-                        mServ.changeMusic(R.raw.stage_three_music);
+                        if(mIsMusic)
+                            mServ.changeMusic(R.raw.stage_three_music);
                         break;
                     }
                 case 3:
                     if (m_Game.get_EnemiesCounter() >= MAX_ENEMY_LVL_THREE) {
-                        Intent intent = new Intent(RunGameActivity.this, WinningActivity.class);
-                        intent.putExtra("Score",m_Game.m_Player.getScore());
-                        intent.putExtra("Sound",mIsSound);
-                        intent.putExtra("Vibrate",mIsVibrate);
-                        intent.putExtra("Music",mIsMusic);
-                        mServ.pauseMusic();
-                        startActivity(intent);
-                        this.finish();
+                        if(isInIntent) {
+                            isInIntent=false;
+                            Intent intent = new Intent(RunGameActivity.this, WinningActivity.class);
+                            intent.putExtra("Score", m_Game.m_Player.getScore());
+                            intent.putExtra("Sound", mIsSound);
+                            intent.putExtra("Vibrate", mIsVibrate);
+                            intent.putExtra("Music", mIsMusic);
+                            mServ.pauseMusic();
+                            startActivity(intent);
+                            this.finish();
+                        }
                     }
             }
         }
         else {
+            isInIntent = false;
             Intent intent = new Intent(RunGameActivity.this, GameOverActivity.class);
+            intent.putExtra("Score",m_Game.m_Player.getScore());
+            intent.putExtra("Sound",mIsSound);
+            intent.putExtra("Vibrate",mIsVibrate);
+            intent.putExtra("Music",mIsMusic);
             startActivity(intent);
             this.finish();
         }
@@ -470,8 +545,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         if(isPause == false) {
             m_Timer.cancel();
             m_Timer = null;
-            /*animator.pause();
-            playerAnimation.stop();*/ //todo:animation
+            stopGameItemsAnimations();
 
             LayoutInflater inflater = getLayoutInflater();
             View alertLayout = inflater.inflate(R.layout.exit_dialog, null);
@@ -486,6 +560,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 public void onClick(DialogInterface dialog, int which) {
 
                     Intent intent = new Intent(RunGameActivity.this, MainActivity.class);
+                    isInIntent = false;
                     startActivity(intent);
                     android.os.Process.killProcess(android.os.Process.myPid());
                     finish();
@@ -509,8 +584,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                             });
                         }
                     }, 0, 20);
-                    /*animator.resume();
-                    playerAnimation.start();*///todo: animation
+                    startGameItemsAnimations();
                 }
 
             });
@@ -528,19 +602,15 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 isPause = true;
                 m_Timer.cancel();
                 m_Timer = null;
-                m_BackgroundAnim.pause();
-                /*animator.pause();
-                playerAnimation.stop();
-                fireSound.pause();*/ //todo: animation
+                m_BackgroundMoveAnim.pause();
+                stopGameItemsAnimations();
 
                 m_PauseButton.setBackgroundResource(R.drawable.ic_play);
             } else {
                 isPause = false;
                 m_PauseButton.setBackgroundResource(R.drawable.ic_paused);
-                m_BackgroundAnim.start();
-                /*animator.resume();
-                playerAnimation.start();
-                fireSound.start();*/ //todo: animation
+                m_BackgroundMoveAnim.start();
+                startGameItemsAnimations();
 
                 m_Timer = new Timer();
                 m_Timer.schedule(new TimerTask() {
@@ -599,8 +669,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 m_Timer.cancel();
                 m_Timer = null;
 
-                /*animator.pause();
-                playerAnimation.stop();*/ // todo:animatoion
+               stopGameItemsAnimations();
 
                 m_PauseButton.setBackgroundResource(R.drawable.ic_play);
 
@@ -615,6 +684,8 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         if (mServ != null && mIsMusic) {
             mServ.resumeMusic();
         }
+
+        startGameItemsAnimations();
     }
 
     @Override
@@ -707,7 +778,9 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
     private void checkIfHitEnemies(ImageView enemyIV, ValueEnemyItem enemy) {
         if (Rect.intersects(m_Game.get_Shot().getRect(), enemy.getRect())) {
+
             playSound(R.raw.explode);
+
             m_Game.set_EnemiesCounter(m_Game.get_EnemiesCounter()+1);
             enemyIV.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIV.getWidth())));
             enemyIV.setY(-300);
@@ -762,6 +835,8 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             intent.putExtra("Vibrate",mIsVibrate);
             intent.putExtra("Music",mIsMusic);
             mServ.pauseMusic();
+            overridePendingTransition(android.R.anim.fade_out,android.R.anim.fade_out);
+            isInIntent = false;
             startActivity(intent);
             this.finish();
         }
@@ -773,6 +848,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             m_HeartThreeIv.setImageResource(R.drawable.ic_hearts_gray);
         }
         playSound(R.raw.crash_sound);
+        //Broken heart animation
+        m_BrokenHeartIv.startAnimation(m_AnimationFadeInOut);
+        m_BrokenHeartIv.setVisibility(View.INVISIBLE);
+        m_PlayerIv.startAnimation(m_AnimationSpaceShipBlink);
         vibrate();
     }
 
@@ -792,6 +871,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         }
     }
 
+
     private ServiceConnection Scon = new ServiceConnection(){
 
         public void onServiceConnected(ComponentName name, IBinder
@@ -802,8 +882,9 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 mServ.stopMusic();
             }
             else {
-                mServ.changeMusic(R.raw.stage_one_music);
-            }
+                if(mIsMusic) {
+                    mServ.changeMusic(R.raw.stage_one_music);
+                }}
         }
 
         public void onServiceDisconnected(ComponentName name) {

@@ -116,11 +116,11 @@
 
         <ImageView
             android:id="@+id/broken_heart"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="80dp"
-            android:layout_marginBottom="120dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="80dp"
+            android:layout_marginRight="20dp"
             android:fillAfter="false"
             android:visibility="invisible"
             android:src="@drawable/ic_broken_heart"/>
@@ -161,65 +161,66 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:visibility="gone"
-            android:src="@drawable/ic_asteroid"/>
+            android:src="@drawable/asteroid_anim"/>
 
         <ImageView
             android:id="@+id/asteroid_two_imageView"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:visibility="gone"
-            android:src="@drawable/ic_asteroid"/>
+            android:src="@drawable/asteroid_anim"/>
 
         <ImageView
             android:id="@+id/asteroid_three_imageView"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:visibility="gone"
-            android:src="@drawable/ic_asteroid"/>
+            android:src="@drawable/asteroid_anim"/>
 
         <ImageView
             android:id="@+id/enemy_one_imageView"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:visibility="gone"
-            android:src="@drawable/ic_alien"/>
+            android:src="@drawable/enemy_red_anim"/>
 
         <ImageView
             android:id="@+id/enemy_two_imageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:visibility="gone"
-            android:src="@drawable/ic_alien"/>
+            android:src="@drawable/enemy_red_anim"/>
 
 
         <ImageView
             android:id="@+id/enemy_three_imageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:visibility="gone"
-            android:src="@drawable/ic_alien"/>
+            android:src="@drawable/enemy_red_anim"/>
 
         <ImageView
             android:id="@+id/enemy_four_imageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:visibility="gone"
-            android:src="@drawable/ic_golem"/>
+            android:src="@drawable/enemy_blue_anim"/>
 
         <ImageView
             android:id="@+id/enemy_five_imageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:visibility="gone"
-            android:src="@drawable/ic_octopus"/>
+            android:src="@drawable/enemy_yellow_anim"/>
 
         <ImageView
             android:id="@+id/enemy_six_imageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:visibility="gone"
-            android:src="@drawable/ic_inhabitants"/>
+            android:src="@drawable/enemy_green_anim"/>
 
     </FrameLayout>
+
 
 </LinearLayout>

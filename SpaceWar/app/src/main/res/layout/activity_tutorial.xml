@@ -23,13 +23,13 @@
 
 
     <ImageView
+        android:id="@+id/background_two"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:id="@+id/background_two"
-        android:outlineSpotShadowColor="@color/black"
         android:outlineAmbientShadowColor="@color/black"
-        android:src="@drawable/tutorial_pattern"/>
+        android:outlineSpotShadowColor="@color/black"
+        android:scaleType="fitXY"
+        android:src="@drawable/tutorial_pattern" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -48,20 +48,20 @@
 
 
     <ImageView
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:id="@+id/asteroid_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_gravity="center|top"
-        android:src="@drawable/ic_asteroid"/>
+        android:src="@drawable/asteroid_anim"/>
 
     <ImageView
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:id="@+id/enemy_imageView"
         android:outlineSpotShadowColor="@color/black"
         android:layout_gravity="center|top"
-        android:src="@drawable/enemy_one_anim"/>
+        android:src="@drawable/enemy_red_anim"/>
 
     <ImageView
         android:layout_width="30dp"
@@ -88,6 +88,17 @@
         android:layout_marginBottom="60dp"
         android:layout_gravity="center|bottom"
         android:src="@drawable/spaceship_orange_new" />
+
+    <ImageView
+        android:id="@+id/broken_heart"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="80dp"
+        android:layout_marginBottom="120dp"
+        android:fillAfter="false"
+        android:visibility="invisible"
+        android:src="@drawable/ic_broken_heart"/>
 
     <Button
         android:layout_width="100dp"
