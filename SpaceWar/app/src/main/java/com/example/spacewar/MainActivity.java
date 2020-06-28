@@ -12,14 +12,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.media.AudioManager;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.VibrationEffect;
@@ -43,8 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean isVibrateCheck = true;
     boolean isMusicCheck = true;
     int m_VideoCurrPosition;
-    boolean[] checkedItems = {true, true, true};
     private boolean mIsBound = false;
+    boolean[] checkedItems;
     Animation upToDown,downToUp;
     LinearLayout bottomLayout, logoLayout;
     Vibrator v;
@@ -55,7 +52,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button m_PlayButton;
     Button m_HighScoreButton;
 
+    private boolean mIsMusic,mIsVibrate,mIsSound;
 
+    private SharedPreferences isPassedTutorialSP;
+    private boolean isPassedTutorial;
 
     private MusicService mServ;
 
@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onServiceConnected(ComponentName name, IBinder
                 binder) {
             mServ = ((MusicService.ServiceBinder)binder).getService();
+            if(!mIsMusic && mServ != null)
+            {
+                mServ.stopMusic();
+            }
         }
 
         public void onServiceDisconnected(ComponentName name) {
@@ -97,6 +101,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         m_PlayButton.setOnClickListener(this);
         m_HighScoreButton = findViewById(R.id.high_score_btn);
         m_HighScoreButton.setOnClickListener(this);
+
+        Intent intent = getIntent();
+        mIsMusic = intent.getBooleanExtra("Music",true);
+        mIsVibrate = intent.getBooleanExtra("Vibrate",true);
+        mIsSound = intent.getBooleanExtra("Sound",true);
+        isMusicCheck = mIsMusic;
+        isVibrateCheck = mIsVibrate;
+        isSoundCheck = mIsSound;
+
+        checkedItems = new boolean[]{mIsSound, mIsMusic, mIsVibrate};
+
+
 
         m_VideoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.main_vid_back_sound_off);
@@ -141,6 +157,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHomeWatcher.startWatch();
 
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        //Shared preference - tutorial
+        isPassedTutorialSP = getSharedPreferences("tutorial", Context.MODE_PRIVATE);
+        isPassedTutorial = isPassedTutorialSP.getBoolean("tutorial",false);
 
         //Animated spaceship git
         m_spaceshipGif = findViewById(R.id.space_ship_gif_view);
@@ -187,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         m_VideoView.start();
 
         //music
-        if (mServ != null) {
+        if (mServ != null && mIsMusic) {
             mServ.resumeMusic();
             if(isMusicCheck)
                 mServ.changeMusic(R.raw.main_music);
@@ -221,16 +241,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 break;
             case R.id.play_game_btn:
-                Intent intent1 = new Intent(MainActivity.this, TutorialActivity.class);
-                overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
-                intent1.putExtra("Sound",isSoundCheck);
-                intent1.putExtra("Vibrate",isVibrateCheck);
-                intent1.putExtra("Music",isMusicCheck);
-                startActivity(intent1);
+                if(!isPassedTutorial)
+                    openTutorialIntent();
+                else
+                    openRunGameIntent();
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + v.getId());
         }
+    }
+
+    private void openRunGameIntent() {
+        Intent intent1 = new Intent(MainActivity.this, RunGameActivity.class);
+        overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
+        intent1.putExtra("Sound",isSoundCheck);
+        intent1.putExtra("Vibrate",isVibrateCheck);
+        intent1.putExtra("Music",isMusicCheck);
+        startActivity(intent1);
+    }
+
+    private void openTutorialIntent() {
+        Intent intent1 = new Intent(MainActivity.this, TutorialActivity.class);
+        overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in);
+        intent1.putExtra("Sound",isSoundCheck);
+        intent1.putExtra("Vibrate",isVibrateCheck);
+        intent1.putExtra("Music",isMusicCheck);
+        startActivity(intent1);
     }
 
     @Override
@@ -248,6 +284,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (item.getItemId()) {
             case R.id.setting:
                 createAlertDialogForSettings();
+                return true;
+            case R.id.tutorial:
+                openTutorialIntent();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

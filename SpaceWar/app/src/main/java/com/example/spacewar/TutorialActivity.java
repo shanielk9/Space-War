@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
@@ -57,6 +58,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private boolean m_IsKnowToKill;
     private boolean m_IsKnowToTakeGift;
     private boolean m_IsKnowToAvoidAsteroid;
+    private boolean m_IsCountdown;
     private int m_GiftsCollectedCounter;
     private int m_AsteroidsPassedCounter;
     private int m_EnemiesKilledCounter;
@@ -69,6 +71,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private int m_ScreenSizeY;
     private Timer m_Timer = new Timer();
     private Handler m_Handler = new Handler();
+    private CountDownTimer m_CountDownTimer = null;
     private int m_EnemyX;
     private int m_EnemyY;
     private int m_AsteroidX;
@@ -79,9 +82,12 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     //music and vibrate;
     private MusicService mServ;
     HomeWatcher mHomeWatcher;
-    private boolean mIsBound = false;
-    private boolean mIsMusic,mIsVibrate,mIsSound;
+    private boolean m_IsBound = false;
+    private boolean m_IsMusic, m_IsVibrate, m_IsSound;
     private Vibrator v;
+
+    //shared preference
+    private SharedPreferences isPassedTutorial;
 
     //animations
     private Animation m_AnimationBlink;
@@ -180,9 +186,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
         //getExtras
         Intent intent = getIntent();
-        mIsMusic = intent.getBooleanExtra("Music",false);
-        mIsVibrate = intent.getBooleanExtra("Vibrate",false);
-        mIsSound = intent.getBooleanExtra("Sound",false);
+        m_IsMusic = intent.getBooleanExtra("Music",false);
+        m_IsVibrate = intent.getBooleanExtra("Vibrate",false);
+        m_IsSound = intent.getBooleanExtra("Sound",false);
 
         //Music background
         doBindService();
@@ -213,28 +219,32 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_IsKnowToKill = false;
         m_IsKnowToTakeGift = false;
         m_IsKnowToAvoidAsteroid = false;
+        m_IsCountdown = true;
 
 
 
-        new CountDownTimer(3000,1000){
+        m_CountDownTimer = new CountDownTimer(4000,1000){
 
             @Override
             public void onTick(long millisUntilFinished) {
-                if(millisUntilFinished < 3000 && millisUntilFinished > 2000 )
+                if(millisUntilFinished < 4000 && millisUntilFinished > 3000 )
                     m_TutorialTv.setText("3");
-                if(millisUntilFinished < 2000 && millisUntilFinished > 1000 )
+                if(millisUntilFinished < 3000 && millisUntilFinished > 2000 )
                     m_TutorialTv.setText("2");
-                if(millisUntilFinished < 1000 )
+                if(millisUntilFinished < 2000 && millisUntilFinished > 1000 )
                     m_TutorialTv.setText("1");
+                if(millisUntilFinished < 1000)
+                    m_TutorialTv.setText(R.string.go);
             }
 
             @Override
             public void onFinish() {
-                m_TutorialTv.setText(getResources().getString(R.string.move_space) +"\n" + m_PlayerMovedCounter + "/4");
+                m_IsCountdown = false;
                 m_GiftsCollectedCounter = 0;
                 m_AsteroidsPassedCounter = 0;
                 m_EnemiesKilledCounter = 0;
                 m_PlayerMovedCounter = 0;
+                m_TutorialTv.setText(getResources().getString(R.string.move_space) +"\n" + m_PlayerMovedCounter + "/4");
 
                 m_Timer.schedule(new TimerTask() {
                     @Override
@@ -252,9 +262,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                                         sendGift();
                                     if (m_IsKnowToTakeGift) {
                                         Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
-                                        intent.putExtra("Sound", mIsSound);
-                                        intent.putExtra("Vibrate", mIsVibrate);
-                                        intent.putExtra("Music", mIsMusic);
+                                        intent.putExtra("Sound", m_IsSound);
+                                        intent.putExtra("Vibrate", m_IsVibrate);
+                                        intent.putExtra("Music", m_IsMusic);
+                                        setSharedPreference();
                                         startActivity(intent);
                                         overridePendingTransition(R.anim.fade_in_out, android.R.anim.fade_out);
                                         TutorialActivity.this.finish();
@@ -294,7 +305,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                 break;
 
             case MotionEvent.ACTION_UP:
-                if(!m_IsKnowToMove) {
+                if(!m_IsKnowToMove && !m_IsCountdown) {
                     m_PlayerMovedCounter++;
                     m_TutorialTv.setText(getResources().getString(R.string.move_space) + "\n" + m_PlayerMovedCounter + "/4");
 
@@ -321,9 +332,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                 vibrate();
                 playSound(R.raw.click_electronic);
                 Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
-                intent.putExtra("Sound",mIsSound);
-                intent.putExtra("Vibrate",mIsVibrate);
-                intent.putExtra("Music",mIsMusic);
+                intent.putExtra("Sound", m_IsSound);
+                intent.putExtra("Vibrate", m_IsVibrate);
+                intent.putExtra("Music", m_IsMusic);
+                setSharedPreference();
                 startActivity(intent);
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 TutorialActivity.this.finish();
@@ -359,7 +371,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         if(m_GiftY > m_ScreenSizeY)
         {
             m_GiftY = -40;
-            m_GiftX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Gift.getWidth()));
+            m_GiftX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Gift.getWidth()*2));
         }
         m_Gift.setX(m_GiftX);
         m_Gift.setY(m_GiftY);
@@ -394,7 +406,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     {
         if (Rect.intersects(m_PlayerRect,m_EnemyRect)){
             vibrate();
-            playSound(R.raw.crash_sound);
+            playSound(R.raw.explode);
 
 
             m_EnemyY = -300;
@@ -419,7 +431,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         if(m_AsteroidY > m_ScreenSizeY)
         {
             m_AsteroidY = -40;
-            m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
+            m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()*2));
 
             if (!m_IsKnowToAvoidAsteroid) {
                 m_AsteroidsPassedCounter++;
@@ -445,7 +457,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     {
         if (Rect.intersects(m_PlayerRect,m_AsteroidRect)){
             vibrate();
-            playSound(R.raw.crash_sound);
+            playSound(R.raw.explode);
 
             m_AsteroidY = -40;
             m_AsteroidX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Asteroid.getWidth()));
@@ -464,7 +476,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     private void checkIfHitEnemies() {
         if (Rect.intersects(m_ShotsRect, m_EnemyRect)) {
-            playSound(R.raw.explode);
+            playSound(R.raw.crash_sound);
             m_EnemyY = -300;
             m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
 
@@ -515,14 +527,14 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         public void onServiceConnected(ComponentName name, IBinder
                 binder) {
             mServ = ((MusicService.ServiceBinder)binder).getService();
-            if(!mIsMusic && mServ != null)
+            if(!m_IsMusic && mServ != null)
             {
                 mServ.stopMusic();
             }
             else
-                {
-                    mServ.changeMusic(R.raw.app_music_2);
-                }
+            {
+                mServ.changeMusic(R.raw.app_music_2);
+            }
         }
 
         public void onServiceDisconnected(ComponentName name) {
@@ -533,15 +545,15 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     void doBindService(){
         bindService(new Intent(this,MusicService.class),
                 Scon, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
+        m_IsBound = true;
     }
 
     void doUnbindService()
     {
-        if(mIsBound)
+        if(m_IsBound)
         {
             unbindService(Scon);
-            mIsBound = false;
+            m_IsBound = false;
         }
     }
 
@@ -578,7 +590,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         }
 
         if (!isScreenOn) {
-            if (mServ != null && mIsMusic) {
+            if (mServ != null && m_IsMusic) {
                 mServ.pauseMusic();
             }
         }
@@ -605,9 +617,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                                 sendGift();
                             if (m_IsKnowToTakeGift) {
                                 Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
-                                intent.putExtra("Sound", mIsSound);
-                                intent.putExtra("Vibrate", mIsVibrate);
-                                intent.putExtra("Music", mIsMusic);
+                                intent.putExtra("Sound", m_IsSound);
+                                intent.putExtra("Vibrate", m_IsVibrate);
+                                intent.putExtra("Music", m_IsMusic);
+                                setSharedPreference();
                                 startActivity(intent);
                                 overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_out);
                                 TutorialActivity.this.finish();
@@ -621,9 +634,16 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         }, 0, 20);
 
         //music
-        if (mServ != null&& mIsMusic) {
+        if (mServ != null&& m_IsMusic) {
             mServ.resumeMusic();
         }
+    }
+
+    private void setSharedPreference() {
+        isPassedTutorial = getSharedPreferences("tutorial", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editorPassedTutorial = isPassedTutorial.edit();
+        editorPassedTutorial.putBoolean("tutorial",true);
+        editorPassedTutorial.apply();
     }
 
     @Override
@@ -634,10 +654,13 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         Intent music = new Intent();
         music.setClass(this,MusicService.class);
         stopService(music);
+
+        if(m_CountDownTimer!=null)
+            m_CountDownTimer.cancel();
     }
 
     private void vibrate() {
-        if(mIsVibrate)
+        if(m_IsVibrate)
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -648,7 +671,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     }
 
     private void playSound(int sound) {
-        if(mIsSound){
+        if(m_IsSound){
             MediaPlayer pressSound = MediaPlayer.create(TutorialActivity.this, sound);
             pressSound.setVolume(30,30);
             pressSound.start();

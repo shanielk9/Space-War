@@ -25,7 +25,10 @@
         android:layout_gravity="center"
         android:layout_marginTop="-50dp"
         android:id="@+id/space_ship_gif_view"
-        android:src="@drawable/fireworks_gif" />
+        android:src="@drawable/fireworks_gif"
+
+        />
+
 
         <LinearLayout
             android:id="@+id/txt_layout"

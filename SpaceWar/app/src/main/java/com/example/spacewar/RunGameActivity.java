@@ -15,6 +15,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -42,9 +43,9 @@ import java.util.TimerTask;
 public class RunGameActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener {
 
     // Static vars
-    private static final int MAX_ENEMY_LVL_ONE = 2;
-    private static final int MAX_ENEMY_LVL_TWO = 2;
-    private static final int MAX_ENEMY_LVL_THREE = 4;
+    private static final int MAX_ENEMY_LVL_ONE = 50;
+    private static final int MAX_ENEMY_LVL_TWO = 60;
+    private static final int MAX_ENEMY_LVL_THREE = 70;
 
     // Screen size
     private int m_ScreenSizeX;
@@ -114,6 +115,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     // Timer and handler
     private Timer m_Timer = new Timer();
     private Handler m_Handler = new Handler();
+    private CountDownTimer m_CountDownTimer = null;
 
     private Game m_Game;
 
@@ -247,16 +249,40 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         });
         mHomeWatcher.startWatch();
 
-        m_Timer.schedule(new TimerTask() {
+        m_CountDownTimer = new CountDownTimer(4000,1000)
+        {
+
             @Override
-            public void run() {
-                m_Handler.post(new Runnable() {
+            public void onTick(long millisUntilFinished) {
+                if(millisUntilFinished < 4000 && millisUntilFinished > 3000 )
+                    m_LevelTv.setText("3");
+                if(millisUntilFinished < 3000 && millisUntilFinished > 2000 )
+                    m_LevelTv.setText("2");
+                if(millisUntilFinished < 2000 && millisUntilFinished > 1000 )
+                    m_LevelTv.setText("1");
+                if(millisUntilFinished < 1000)
+                    m_LevelTv.setText(R.string.go);
+            }
+
+            @Override
+            public void onFinish() {
+                m_LevelTv.setText(getResources().getString(R.string.level_one));
+                m_ShotsIv.setVisibility(View.VISIBLE);
+                m_Timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        runGame();
-                    }
-                });
-            }}, 0, 20);
+                        m_Handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                runGame();
+                            }
+                        });
+                    }}, 0, 20);
+
+            }
+        }.start();
+
+
     }
 
 
@@ -389,7 +415,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
     private void setAsteroidState(ImageView asteroidIv, NonValueEnemyItem asteroid, int dist) {
         asteroidIv.setVisibility(View.VISIBLE);
-        asteroidIv.setY((int) Math.floor(Math.random() * (m_ScreenSizeY - asteroidIv.getHeight())));
+        asteroidIv.setY((int) Math.floor(Math.random() * (m_ScreenSizeY - asteroidIv.getHeight()*2)));
         if(asteroid.getDirection() == 1) {
             asteroidIv.setX(dist);
         }
@@ -404,7 +430,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
     private void setEnemyState(ImageView enemyIv, ValueEnemyItem enemy, int dist) {
         enemyIv.setVisibility(View.VISIBLE);
-        enemyIv.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIv.getWidth())));
+        enemyIv.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIv.getWidth()*2)));
         enemyIv.setY(dist);
         enemy.setRect((int) enemyIv.getX(),
                 (int) enemyIv.getY(),
@@ -561,6 +587,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
                     Intent intent = new Intent(RunGameActivity.this, MainActivity.class);
                     isInIntent = false;
+                    intent.putExtra("Score",m_Game.m_Player.getScore());
+                    intent.putExtra("Sound",mIsSound);
+                    intent.putExtra("Vibrate",mIsVibrate);
+                    intent.putExtra("Music",mIsMusic);
                     startActivity(intent);
                     android.os.Process.killProcess(android.os.Process.myPid());
                     finish();
@@ -669,7 +699,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 m_Timer.cancel();
                 m_Timer = null;
 
-               stopGameItemsAnimations();
+                stopGameItemsAnimations();
 
                 m_PauseButton.setBackgroundResource(R.drawable.ic_play);
 
@@ -696,6 +726,9 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         Intent music = new Intent();
         music.setClass(this,MusicService.class);
         stopService(music);
+
+        if(m_CountDownTimer!=null)
+            m_CountDownTimer.cancel();
     }
 
     private void createShots()
@@ -723,7 +756,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         {
             m_Game.get_Gift().setSpeed(800,100);
             m_GiftIv.setY(-40);
-            m_GiftIv.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - m_GiftIv.getWidth())));
+            m_GiftIv.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - m_GiftIv.getWidth()*2)));
         }
 
         m_Game.get_Gift().setRect((int)m_GiftIv.getY(),
@@ -767,7 +800,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             enemy.setSpeed(1000,300);
             m_Game.set_EnemiesCounter(m_Game.get_EnemiesCounter()+1);
             enemyIV.setY(-300);
-            enemyIV.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIV.getWidth())));
+            enemyIV.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIV.getWidth()*2)));
         }
 
         enemy.setRect((int) enemyIV.getY(),
@@ -779,7 +812,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private void checkIfHitEnemies(ImageView enemyIV, ValueEnemyItem enemy) {
         if (Rect.intersects(m_Game.get_Shot().getRect(), enemy.getRect())) {
 
-            playSound(R.raw.explode);
+            playSound(R.raw.crash_sound);
 
             m_Game.set_EnemiesCounter(m_Game.get_EnemiesCounter()+1);
             enemyIV.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIV.getWidth())));
@@ -847,7 +880,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         if (m_Game.get_Player().getLives() == 2) {
             m_HeartThreeIv.setImageResource(R.drawable.ic_hearts_gray);
         }
-        playSound(R.raw.crash_sound);
+        playSound(R.raw.explode);
         //Broken heart animation
         m_BrokenHeartIv.startAnimation(m_AnimationFadeInOut);
         m_BrokenHeartIv.setVisibility(View.INVISIBLE);

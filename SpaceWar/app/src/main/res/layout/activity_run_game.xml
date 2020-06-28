@@ -141,6 +141,7 @@
             android:id="@+id/shot_imageView"
             android:outlineSpotShadowColor="@color/black"
             android:layout_marginBottom="60dp"
+            android:visibility="invisible"
             android:layout_gravity="center|bottom"
             android:src="@drawable/laser_yellow"/>
 

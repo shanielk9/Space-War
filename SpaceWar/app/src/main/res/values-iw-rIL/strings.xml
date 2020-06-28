@@ -25,4 +25,5 @@
     <string name="enter_your_name_msg">בבקשה הכנס את השם שלך</string>
     <string name="avoid_asteroids">התחמק מהאסטרואידים</string>
     <string name="collision_alert_tutorial">הזהר!</string>
+    <string name="go">התחל!</string>
 </resources>

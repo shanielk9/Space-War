@@ -9,5 +9,11 @@
         android:icon="@drawable/ic_emblem_system"
         android:id="@+id/setting">
     </item>
+    <item
+        app:showAsAction="ifRoom"
+        android:title="settings"
+        android:icon="@drawable/ic_gift"
+        android:id="@+id/tutorial">
+    </item>
 
 </menu>

@@ -8,6 +8,9 @@
     android:orientation="vertical"
     android:background="@drawable/game_over_background">
 
+
+
+
     <pl.droidsonroids.gif.GifImageView
         android:layout_width="340dp"
         android:layout_height="300dp"
@@ -16,6 +19,7 @@
         android:src="@drawable/game_over_gif"
 
         />
+
 
     <LinearLayout
         android:id="@+id/txt_layout"

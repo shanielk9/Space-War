@@ -136,10 +136,10 @@ public class GameOverActivity extends AppCompatActivity implements View.OnClickL
             startActivity(intent);
             this.finish();
         }
-        else
-        {
-            Toast.makeText(GameOverActivity.this, getResources().getString(R.string.enter_your_name_msg), Toast.LENGTH_LONG).show();
-        }
+            else
+            {
+                Toast.makeText(GameOverActivity.this, getResources().getString(R.string.enter_your_name_msg), Toast.LENGTH_LONG).show();
+            }
     }
 
     private void addNewPreference() {
