@@ -26,4 +26,7 @@
     <string name="avoid_asteroids">התחמק מהאסטרואידים</string>
     <string name="collision_alert_tutorial">הזהר!</string>
     <string name="go">התחל!</string>
+    <string name="settings">הגדרות:</string>
+    <string name="scrolling_text">תחזור בקרוב - שלבים ואתגרים חדשים בדרך!!!</string>
+    <string name="level_king">הכר את מלך החלל...</string>
 </resources>

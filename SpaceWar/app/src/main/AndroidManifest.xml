@@ -11,15 +11,15 @@
         android:roundIcon="@mipmap/ic_app_icon_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".RunGameActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".WinningActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".GameOverActivity"
-            android:screenOrientation="portrait"/>
-
+        <activity
+            android:name=".RunGameActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".WinningActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".GameOverActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TutorialActivity"
             android:screenOrientation="portrait" />

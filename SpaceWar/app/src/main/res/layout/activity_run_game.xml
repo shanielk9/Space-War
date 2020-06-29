@@ -50,8 +50,8 @@
 
         <TextView
             android:id="@+id/next_level_tv"
-            android:layout_width="140dp"
-            android:layout_height="100dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="-10dp"
             android:gravity="center"
@@ -59,9 +59,18 @@
             android:shadowRadius="2"
             android:shadowColor="@color/black"
             android:textColor="@color/white"
-            android:textSize="20sp"
+            android:textSize="25sp"
             android:text = "@string/level_one"
             android:fontFamily="@font/aldrich"/>
+
+        <Button
+            android:id="@+id/play_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="50dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:background="@drawable/ic_play"/>
 
         <LinearLayout
             android:id="@+id/linear_settings_layout"
@@ -77,6 +86,7 @@
                 android:layout_height="40dp"
                 android:layout_marginLeft="10dp"
                 android:layout_gravity="center"
+                android:visibility="invisible"
                 android:background="@drawable/ic_home"/>
 
         <ImageView
@@ -108,8 +118,9 @@
                 android:id="@+id/pause_btn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginLeft="80dp"
+                android:layout_marginLeft="70dp"
                 android:layout_gravity="center"
+                android:visibility="invisible"
                 android:background="@drawable/ic_paused"/>
 
         </LinearLayout>
@@ -120,7 +131,6 @@
             android:layout_height="50dp"
             android:layout_gravity="center|bottom"
             android:layout_marginBottom="80dp"
-            android:layout_marginRight="20dp"
             android:fillAfter="false"
             android:visibility="invisible"
             android:src="@drawable/ic_broken_heart"/>
@@ -177,6 +187,20 @@
             android:layout_height="40dp"
             android:visibility="gone"
             android:src="@drawable/asteroid_anim"/>
+
+        <ImageView
+            android:id="@+id/enemy_king_shot_one"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
+            android:src="@drawable/fire_shot"/>
+
+        <ImageView
+            android:id="@+id/enemy_king_imageView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:visibility="gone"
+            android:src="@drawable/king_enemy_anim"/>
 
         <ImageView
             android:id="@+id/enemy_one_imageView"

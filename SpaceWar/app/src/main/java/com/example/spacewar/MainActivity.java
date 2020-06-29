@@ -21,6 +21,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -294,11 +295,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void createAlertDialogForSettings() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Settings:");
+
+        LayoutInflater inflater = getLayoutInflater();
+        View settingsLayout = inflater.inflate(R.layout.settings_dialog, null);
+
+        AlertDialog.Builder settingsBuilder = new AlertDialog.Builder(MainActivity.this);
+        settingsBuilder.setCustomTitle(settingsLayout);
+
+
+
 
         // add a checkbox list
-        builder.setMultiChoiceItems(R.array.settings_array, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+        settingsBuilder.setMultiChoiceItems(R.array.settings_array, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                 // user checked or unchecked a box
@@ -328,14 +336,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         // add OK and Cancel buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        settingsBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
         });
 
         // create and show the alert dialog
-        AlertDialog dialog = builder.create();
+        AlertDialog dialog = settingsBuilder.create();
         dialog.show();
     }
 

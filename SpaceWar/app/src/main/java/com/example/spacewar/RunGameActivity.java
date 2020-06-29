@@ -43,9 +43,9 @@ import java.util.TimerTask;
 public class RunGameActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener {
 
     // Static vars
-    private static final int MAX_ENEMY_LVL_ONE = 50;
-    private static final int MAX_ENEMY_LVL_TWO = 60;
-    private static final int MAX_ENEMY_LVL_THREE = 70;
+    private static final int MAX_ENEMY_LVL_ONE = 20;
+    private static final int MAX_ENEMY_LVL_TWO = 40;
+    private static final int MAX_ENEMY_LVL_THREE = 50;
 
     // Screen size
     private int m_ScreenSizeX;
@@ -66,10 +66,13 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     ImageView m_EnemyFourIv;
     ImageView m_EnemyFiveIv;
     ImageView m_EnemySixIv;
+    ImageView m_EnemyKingIv;
+    ImageView m_EnemyKingShotIv;
     ImageView m_GiftIv;
     ImageView m_ShotsIv;
     Button m_HomeButton;
     Button m_PauseButton;
+    Button m_PlayButton;
     ImageView m_HeartOneIv;
     ImageView m_HeartTwoIv;
     ImageView m_HeartThreeIv;
@@ -81,8 +84,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private ValueAnimator m_BackgroundMoveAnim;
     private AlphaAnimation m_BackgroundFadeAnim;
     private Animation m_AnimationSpaceShipBlink;
+    private Animation m_AnimationKingBlink;
     private Animation m_AnimationEnemyBlink;
     private Animation m_AnimationFadeInOut;
+    private Animation m_AnimationKingUpToDown;
     private AnimationDrawable m_EnemyOneAnim;
     private AnimationDrawable m_EnemyTwoAnim;
     private AnimationDrawable m_EnemyThreeAnim;
@@ -92,6 +97,13 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private AnimationDrawable m_AsteroidOneAnim;
     private AnimationDrawable m_AsteroidTwoAnim;
     private AnimationDrawable m_AsteroidThreeAnim;
+    private AnimationDrawable m_KingAnim;
+
+    //boolean for king enemy
+    private boolean m_IsKingMoveLeft = true;
+    private boolean m_IsKingDead = false;
+    private boolean m_KingIsAbove = true;
+    private boolean m_KingAnimationNotStart = true;
 
     //members for onTouch listener
     FrameLayout m_FrameLayout;
@@ -116,6 +128,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private Timer m_Timer = new Timer();
     private Handler m_Handler = new Handler();
     private CountDownTimer m_CountDownTimer = null;
+    private CountDownTimer m_FinishGameCountDownTimer = null;
 
     private Game m_Game;
 
@@ -137,10 +150,13 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_EnemyFourIv = findViewById(R.id.enemy_four_imageView);
         m_EnemyFiveIv = findViewById(R.id.enemy_five_imageView);
         m_EnemySixIv = findViewById(R.id.enemy_six_imageView);
+        m_EnemyKingIv = findViewById(R.id.enemy_king_imageView);
+        m_EnemyKingShotIv = findViewById(R.id.enemy_king_shot_one);
         m_GiftIv = findViewById(R.id.gift_imageView);
         m_ShotsIv = findViewById(R.id.shot_imageView);
         m_HomeButton = findViewById(R.id.home_btn);
         m_PauseButton = findViewById(R.id.pause_btn);
+        m_PlayButton = findViewById(R.id.play_btn);
         m_HeartOneIv = findViewById(R.id.heart_one);
         m_HeartTwoIv = findViewById(R.id.heart_two);
         m_HeartThreeIv = findViewById(R.id.heart_three);
@@ -169,6 +185,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         //Set listeners
         m_PlayerIv.setOnTouchListener(this);
         m_PauseButton.setOnClickListener(this);
+        m_PlayButton.setOnClickListener(this);
         m_HomeButton.setOnClickListener(this);
         m_FrameLayout.setOnTouchListener(this);
 
@@ -195,9 +212,10 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         //initialize animation
         m_LevelTv.startAnimation(AnimationUtils.loadAnimation(this,android.R.anim.fade_in));
         m_AnimationSpaceShipBlink = AnimationUtils.loadAnimation(this,R.anim.hit_spaceship_blink);
+        m_AnimationKingBlink = AnimationUtils.loadAnimation(this,R.anim.hit_king_blink);
         m_AnimationEnemyBlink = AnimationUtils.loadAnimation(this,R.anim.hit_enemy_blink);
         m_AnimationFadeInOut = AnimationUtils.loadAnimation(this,R.anim.fade_in_out);
-
+        m_AnimationKingUpToDown = AnimationUtils.loadAnimation(this,R.anim.up_to_down_king_enemy);
 
         m_EnemyOneAnim = (AnimationDrawable) m_EnemyOneIv.getDrawable();
         m_EnemyTwoAnim = (AnimationDrawable) m_EnemyTwoIv.getDrawable();
@@ -205,6 +223,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_EnemyFourAnim = (AnimationDrawable) m_EnemyFourIv.getDrawable();
         m_EnemyFiveAnim = (AnimationDrawable) m_EnemyFiveIv.getDrawable();
         m_EnemySixAnim = (AnimationDrawable) m_EnemySixIv.getDrawable();
+        m_KingAnim = (AnimationDrawable) m_EnemyKingIv.getDrawable();
 
         m_AsteroidOneAnim = (AnimationDrawable) m_AsteroidOneIv.getDrawable();
         m_AsteroidTwoAnim = (AnimationDrawable) m_AsteroidTwoIv.getDrawable();
@@ -249,24 +268,28 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         });
         mHomeWatcher.startWatch();
 
-        m_CountDownTimer = new CountDownTimer(4000,1000)
+        m_CountDownTimer = new CountDownTimer(5000,1000)
         {
 
             @Override
             public void onTick(long millisUntilFinished) {
-                if(millisUntilFinished < 4000 && millisUntilFinished > 3000 )
+                if(millisUntilFinished < 5000 && millisUntilFinished > 4000 )
                     m_LevelTv.setText("3");
-                if(millisUntilFinished < 3000 && millisUntilFinished > 2000 )
+                if(millisUntilFinished < 4000 && millisUntilFinished > 3000 )
                     m_LevelTv.setText("2");
-                if(millisUntilFinished < 2000 && millisUntilFinished > 1000 )
+                if(millisUntilFinished < 3000 && millisUntilFinished > 2000 )
                     m_LevelTv.setText("1");
-                if(millisUntilFinished < 1000)
+                if(millisUntilFinished < 2000 && millisUntilFinished > 1000 )
                     m_LevelTv.setText(R.string.go);
+                if(millisUntilFinished < 1000)
+                    m_LevelTv.setText(getResources().getString(R.string.level_one));
             }
 
             @Override
             public void onFinish() {
-                m_LevelTv.setText(getResources().getString(R.string.level_one));
+                m_LevelTv.setVisibility(View.GONE);
+                m_HomeButton.setVisibility(View.VISIBLE);
+                m_PauseButton.setVisibility(View.VISIBLE);
                 m_ShotsIv.setVisibility(View.VISIBLE);
                 m_Timer.schedule(new TimerTask() {
                     @Override
@@ -281,8 +304,6 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
             }
         }.start();
-
-
     }
 
 
@@ -295,6 +316,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_EnemyFourAnim.start();
         m_EnemyFiveAnim.start();
         m_EnemySixAnim.start();
+        m_KingAnim.start();
 
         m_AsteroidOneAnim.start();
         m_AsteroidTwoAnim.start();
@@ -309,11 +331,13 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_EnemyFourAnim.stop();
         m_EnemyFiveAnim.stop();
         m_EnemySixAnim.stop();
+        m_KingAnim.stop();
 
         m_AsteroidOneAnim.stop();
         m_AsteroidTwoAnim.stop();
         m_AsteroidThreeAnim.stop();
     }
+
     private void initializeNextLevel() {
         m_Game.set_EnemiesCounter(0);
         m_Game.get_Player().setRect(0,0,0,0);
@@ -329,25 +353,29 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
         if(m_Game.get_CurrLevel() > 1)
         {
+            //Transition animation between levels
+            m_BackgroundOne.setVisibility(View.GONE);
+            m_BackgroundTwo.setVisibility(View.GONE);
+            m_LevelTv.setVisibility(View.GONE);
+
+
             //Set enemies state
             setEnemyState(m_EnemyFourIv,m_Game.get_Enemy_four(),-700);
             setEnemyState(m_EnemyFiveIv,m_Game.get_Enemy_five(),-600);
             setAsteroidState(m_AsteroidOneIv,m_Game.get_Asteroid_One(),-400);
             setAsteroidState(m_AsteroidTwoIv,m_Game.get_Asteroid_Two(),-600);
 
-            //Transition animation between levels
-            m_BackgroundOne.setVisibility(View.GONE);
-            m_BackgroundTwo.setVisibility(View.GONE);
-            m_LevelTv.setVisibility(View.GONE);
 
             m_BackgroundFadeAnim.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
                     m_BackgroundFade.setVisibility(View.VISIBLE);
+                    m_ShotsIv.setVisibility(View.GONE);
                 }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
+                    m_ShotsIv.setVisibility(View.VISIBLE);
                     m_BackgroundFade.setVisibility(View.GONE);
                     m_BackgroundOne.setImageResource(R.drawable.stage_two_pattern);
                     m_BackgroundTwo.setImageResource(R.drawable.stage_two_pattern);
@@ -366,9 +394,6 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             m_BackgroundFade.startAnimation(m_BackgroundFadeAnim);
             m_BackgroundMoveAnim.start();
 
-
-
-
         }
 
         if(m_Game.get_CurrLevel() > 2)
@@ -386,14 +411,17 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 @Override
                 public void onAnimationStart(Animation animation) {
                     m_BackgroundFade.setVisibility(View.VISIBLE);
+                    m_ShotsIv.setVisibility(View.GONE);
                 }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     m_BackgroundFade.setVisibility(View.GONE);
+                    m_ShotsIv.setVisibility(View.VISIBLE);
                     m_BackgroundOne.setImageResource(R.drawable.stage_three_pattern);
                     m_BackgroundTwo.setImageResource(R.drawable.stage_three_pattern);
                     m_LevelTv.setText(getResources().getString(R.string.level_three));
+                    m_LevelTv.startAnimation(m_AnimationSpaceShipBlink);
 
                     m_BackgroundOne.setVisibility(View.VISIBLE);
                     m_BackgroundTwo.setVisibility(View.VISIBLE);
@@ -410,6 +438,56 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
 
 
+        }
+        if(m_Game.get_CurrLevel() > 3)
+        {
+            setKingState(m_EnemyKingIv,m_Game.get_Enemy_king(), 600);
+            m_EnemyKingShotIv.setVisibility(View.VISIBLE);
+            /*m_EnemyKingShot2Iv.setVisibility(View.VISIBLE);
+            m_EnemyKingShot3Iv.setVisibility(View.VISIBLE);*/
+            m_EnemyOneIv.setVisibility(View.GONE);
+            m_EnemyTwoIv.setVisibility(View.GONE);
+            m_EnemyThreeIv.setVisibility(View.GONE);
+            m_EnemyFourIv.setVisibility(View.GONE);
+            m_EnemyFiveIv.setVisibility(View.GONE);
+            m_EnemySixIv.setVisibility(View.GONE);
+            m_GiftIv.setVisibility(View.GONE);
+            m_AsteroidThreeIv.setVisibility(View.GONE);
+
+            //Change Background and set animation
+            m_BackgroundOne.setVisibility(View.GONE);
+            m_BackgroundTwo.setVisibility(View.GONE);
+            m_LevelTv.setVisibility(View.GONE);//todo
+
+            m_BackgroundFadeAnim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    m_BackgroundFade.setVisibility(View.VISIBLE);
+                    m_ShotsIv.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    m_BackgroundFade.setVisibility(View.GONE);
+                    m_ShotsIv.setVisibility(View.VISIBLE);
+                    m_BackgroundOne.setImageResource(R.drawable.king_pattern);
+                    m_BackgroundTwo.setImageResource(R.drawable.king_pattern);
+                    m_LevelTv.setText(getResources().getString(R.string.level_king));
+                    m_LevelTv.startAnimation(m_AnimationSpaceShipBlink);
+
+                    m_BackgroundOne.setVisibility(View.VISIBLE);
+                    m_BackgroundTwo.setVisibility(View.VISIBLE);
+                    m_LevelTv.setVisibility(View.VISIBLE);
+
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+
+            m_BackgroundFade.startAnimation(m_BackgroundFadeAnim);
+            m_BackgroundMoveAnim.start();
         }
     }
 
@@ -428,6 +506,16 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 (int) asteroidIv.getY()+ asteroidIv.getHeight());
     }
 
+    private void setKingState(ImageView enemyIv, ValueEnemyItem enemy, int dist) {
+        enemyIv.setX((int) m_ScreenSizeX/2 - enemyIv.getWidth()/2);
+        enemyIv.setY(dist);
+        enemy.setRect( 0,0,0,0/*(int) enemyIv.getX(),
+                (int) enemyIv.getY(),
+                (int) enemyIv.getX()+ enemyIv.getWidth(),
+                (int) enemyIv.getY()+ enemyIv.getHeight()*/);
+    }
+
+
     private void setEnemyState(ImageView enemyIv, ValueEnemyItem enemy, int dist) {
         enemyIv.setVisibility(View.VISIBLE);
         enemyIv.setX((int) Math.floor(Math.random() * (m_ScreenSizeX - enemyIv.getWidth()*2)));
@@ -441,25 +529,38 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
     private void runGame() {
         createShots();
+        if(m_Game.get_CurrLevel() <= 3){
+            moveEnemies(m_EnemyOneIv,m_Game.get_Enemy_one());
+            moveEnemies(m_EnemyTwoIv,m_Game.get_Enemy_two());
+            moveEnemies(m_EnemyThreeIv,m_Game.get_Enemy_three());
+            sendGift();
 
-        moveEnemies(m_EnemyOneIv,m_Game.get_Enemy_one());
-        moveEnemies(m_EnemyTwoIv,m_Game.get_Enemy_two());
-        moveEnemies(m_EnemyThreeIv,m_Game.get_Enemy_three());
-        sendGift();
 
+            if(m_Game.get_CurrLevel() > 1)
+            {
+                sendAsteroid(m_AsteroidOneIv,m_Game.get_Asteroid_One());
+                sendAsteroid(m_AsteroidTwoIv,m_Game.get_Asteroid_Two());
+                moveEnemies(m_EnemyFourIv,m_Game.get_Enemy_four());
+                moveEnemies(m_EnemyFiveIv,m_Game.get_Enemy_five());
+            }
 
-        if(m_Game.get_CurrLevel() > 1)
-        {
-            sendAsteroid(m_AsteroidOneIv,m_Game.get_Asteroid_One());
-            sendAsteroid(m_AsteroidTwoIv,m_Game.get_Asteroid_Two());
-            moveEnemies(m_EnemyFourIv,m_Game.get_Enemy_four());
-            moveEnemies(m_EnemyFiveIv,m_Game.get_Enemy_five());
+            if(m_Game.get_CurrLevel() > 2)
+            {
+                moveEnemies(m_EnemySixIv,m_Game.get_Enemy_six());
+                sendAsteroid(m_AsteroidThreeIv,m_Game.get_Asteroid_Three());
+            }
         }
+        else{
+            if(m_Game.get_CurrLevel() > 3)
+            {
+                moveKing(m_EnemyKingIv,m_Game.get_Enemy_king());
+                createKingShots(m_EnemyKingShotIv,m_Game.get_KingShotOne());
+                /*createKingShots(m_EnemyKingShot2Iv,m_Game.get_KingShotTwo());
+                createKingShots(m_EnemyKingShot3Iv,m_Game.get_KingShotThree());*/
 
-        if(m_Game.get_CurrLevel() > 2)
-        {
-            moveEnemies(m_EnemySixIv,m_Game.get_Enemy_six());
-            sendAsteroid(m_AsteroidThreeIv,m_Game.get_Asteroid_Three());
+                sendAsteroid(m_AsteroidOneIv,m_Game.get_Asteroid_One());
+                sendAsteroid(m_AsteroidTwoIv,m_Game.get_Asteroid_Two());
+            }
         }
         checkIfLevelEnd();
 
@@ -470,6 +571,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             switch (m_Game.get_CurrLevel()) {
                 case 1:
                     if (m_Game.get_EnemiesCounter() >= MAX_ENEMY_LVL_ONE) {
+                        movePlayerUpWhileFinishLevel();
                         m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
                         initializeNextLevel();
                         handelOnPauseBtnClick();
@@ -479,6 +581,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                     }
                 case 2:
                     if (m_Game.get_EnemiesCounter() >= MAX_ENEMY_LVL_TWO) {
+                        movePlayerUpWhileFinishLevel();
                         m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
                         initializeNextLevel();
                         handelOnPauseBtnClick();
@@ -488,17 +591,49 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                     }
                 case 3:
                     if (m_Game.get_EnemiesCounter() >= MAX_ENEMY_LVL_THREE) {
-                        if(isInIntent) {
-                            isInIntent=false;
-                            Intent intent = new Intent(RunGameActivity.this, WinningActivity.class);
-                            intent.putExtra("Score", m_Game.m_Player.getScore());
-                            intent.putExtra("Sound", mIsSound);
-                            intent.putExtra("Vibrate", mIsVibrate);
-                            intent.putExtra("Music", mIsMusic);
-                            mServ.pauseMusic();
-                            startActivity(intent);
-                            this.finish();
-                        }
+                        movePlayerUpWhileFinishLevel();
+                        m_Game.set_CurrLevel(m_Game.get_CurrLevel()+1);
+                        initializeNextLevel();
+                        handelOnPauseBtnClick();
+                        if(mIsMusic)
+                            mServ.changeMusic(R.raw.king_sound);
+                        break;
+                    }
+                case 4:
+                    if (m_IsKingDead) {
+                        boolean IsStart = true;
+                        m_Timer.cancel();
+                        m_FinishGameCountDownTimer = new CountDownTimer(2400,1000) {
+                            @Override
+                            public void onTick(long millisUntilFinished) {
+                                if(isStart)
+                                {
+                                    m_AsteroidOneIv.setVisibility(View.GONE);
+                                    m_AsteroidTwoIv.setVisibility(View.GONE);
+                                    m_EnemyKingIv.setVisibility(View.GONE);
+                                    m_ShotsIv.setVisibility(View.GONE);
+                                    m_EnemyKingShotIv.setVisibility(View.GONE);
+                                    movePlayerUpWhileFinishLevel();
+                                    isStart = false;
+                                }
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                if(isInIntent) {
+                                    isInIntent=false;
+                                    Intent intent = new Intent(RunGameActivity.this, WinningActivity.class);
+                                    intent.putExtra("Score", m_Game.m_Player.getScore());
+                                    intent.putExtra("Sound", mIsSound);
+                                    intent.putExtra("Vibrate", mIsVibrate);
+                                    intent.putExtra("Music", mIsMusic);
+                                    mServ.changeMusic(R.raw.main_music);
+                                    mServ.pauseMusic();
+                                    startActivity(intent);
+                                    RunGameActivity.this.finish();
+                                }
+                            }
+                        }.start();
                     }
             }
         }
@@ -509,9 +644,42 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             intent.putExtra("Sound",mIsSound);
             intent.putExtra("Vibrate",mIsVibrate);
             intent.putExtra("Music",mIsMusic);
+            mServ.changeMusic(R.raw.main_music);
+            mServ.pauseMusic();
             startActivity(intent);
             this.finish();
         }
+    }
+
+    private void movePlayerUpWhileFinishLevel() {
+        final Boolean[] isUp = {true};
+        final Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                m_Handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        m_PlayButton.setVisibility(View.INVISIBLE);
+                        m_HomeButton.setVisibility(View.INVISIBLE);
+                        m_PlayerIv.setY(m_PlayerIv.getY()-m_ScreenSizeY/150);
+                        if(m_PlayerIv.getY() < -200)
+                        {
+                            isUp[0] = false;
+                            if(!m_IsKingDead){
+                            m_PlayerIv.setY(m_ScreenSizeY-200);
+                            m_PlayerIv.setX(m_ScreenSizeX/2 - m_PlayerIv.getWidth()/2);
+                            m_PlayerIv.setY(m_PlayerIv.getY()-m_ScreenSizeY/150);}
+                            else {t.cancel();}
+                        }
+                        if(!isUp[0] && m_PlayerIv.getY() < m_ScreenSizeY-200-m_PlayerIv.getHeight())
+                        {   t.cancel();
+                            m_PlayButton.setVisibility(View.VISIBLE);
+                            m_HomeButton.setVisibility(View.VISIBLE);}
+                    }
+                });
+            }}, 0, 20);
+
     }
 
     @Override
@@ -552,6 +720,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         if(!isMove){
             switch (v.getId()) {
                 case R.id.pause_btn:
+                case R.id.play_btn:
                     handelOnPauseBtnClick();
                     playSound(R.raw.click_electronic);
                     vibrate();
@@ -578,13 +747,11 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
             AlertDialog.Builder alert = new AlertDialog.Builder(RunGameActivity.this);
             alert.setView(alertLayout);
-
             alert.setCancelable(false);
 
             alert.setPositiveButton(getResources().getString(R.string.yes_str), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-
                     Intent intent = new Intent(RunGameActivity.this, MainActivity.class);
                     isInIntent = false;
                     intent.putExtra("Score",m_Game.m_Player.getScore());
@@ -628,19 +795,57 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
     private void handelOnPauseBtnClick() {
         if (isStart) {
             if (isPause == false) {
-
+                m_EnemyKingShotIv.setVisibility(View.GONE);
+                m_ShotsIv.setVisibility(View.GONE);
+                m_LevelTv.setVisibility(View.VISIBLE);
                 isPause = true;
+                m_PauseButton.setVisibility(View.INVISIBLE);
+                m_PlayButton.setVisibility(View.VISIBLE);
                 m_Timer.cancel();
                 m_Timer = null;
                 m_BackgroundMoveAnim.pause();
                 stopGameItemsAnimations();
 
-                m_PauseButton.setBackgroundResource(R.drawable.ic_play);
             } else {
                 isPause = false;
-                m_PauseButton.setBackgroundResource(R.drawable.ic_paused);
+                m_ShotsIv.setVisibility(View.VISIBLE);
+                if(m_Game.get_CurrLevel()>3)
+                    m_EnemyKingShotIv.setVisibility(View.VISIBLE);
+                m_PlayButton.setVisibility(View.INVISIBLE);
+                m_PauseButton.setVisibility(View.VISIBLE);
+                m_LevelTv.setVisibility(View.GONE);
                 m_BackgroundMoveAnim.start();
                 startGameItemsAnimations();
+                if(m_Game.get_CurrLevel() > 3 && m_KingAnimationNotStart)
+                {
+                    m_KingAnimationNotStart = false;
+                    m_EnemyKingIv.setVisibility(View.VISIBLE);
+
+                    m_AnimationKingUpToDown.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            m_EnemyKingShotIv.setVisibility(View.GONE);
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            m_KingIsAbove = false;
+                            m_EnemyKingShotIv.setVisibility(View.VISIBLE);
+                            m_Game.get_Enemy_king().setRect((int) m_EnemyKingIv.getX(),
+                                    (int) m_EnemyKingIv.getY(),
+                                    (int) m_EnemyKingIv.getX()+ m_EnemyKingIv.getWidth(),
+                                    (int) m_EnemyKingIv.getY()+ m_EnemyKingIv.getHeight());
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+
+                        }
+                    });
+
+                    m_EnemyKingIv.startAnimation(m_AnimationKingUpToDown);
+                }
 
                 m_Timer = new Timer();
                 m_Timer.schedule(new TimerTask() {
@@ -729,6 +934,8 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
 
         if(m_CountDownTimer!=null)
             m_CountDownTimer.cancel();
+        if(m_FinishGameCountDownTimer!=null)
+            m_FinishGameCountDownTimer.cancel();
     }
 
     private void createShots()
@@ -745,6 +952,23 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_ShotsIv.setY(ivY);
 
         m_Game.get_Shot().setRect(ivY,ivX,ivY+m_ShotsIv.getHeight(),ivX+m_ShotsIv.getWidth());
+    }
+
+    private void createKingShots(ImageView kingShotIV, GameItem kingShot)
+    {
+        if(!m_KingIsAbove){
+        int ivX = (int)kingShotIV.getX();
+        int ivY = (int)kingShotIV.getY();
+
+        ivY += m_ScreenSizeY / kingShot.getSpeed();
+        if (ivY > m_ScreenSizeY ) {
+            ivX = (int)Math.floor(Math.random() * (kingShotIV.getX() + m_EnemyKingIv.getWidth() - kingShotIV.getWidth()));
+            ivY = 600;
+        }
+        kingShotIV.setX(ivX);
+        kingShotIV.setY(ivY);
+
+        kingShot.setRect(ivY,ivX,ivY+kingShotIV.getHeight(),ivX+kingShotIV.getWidth());}
     }
 
 
@@ -809,6 +1033,54 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
                 (int) enemyIV.getX()+ enemyIV.getWidth());
     }
 
+    private void moveKing(ImageView enemyIV, ValueEnemyItem enemy)
+    {
+        checkIfHitKing(enemyIV,enemy);
+        checkIfPlayerEnemyShotsCollision(m_EnemyKingShotIv,m_Game.get_KingShotOne());
+        /*checkIfPlayerEnemyShotsCollision(m_EnemyKingShot2Iv,m_Game.get_KingShotTwo());
+        checkIfPlayerEnemyShotsCollision(m_EnemyKingShot3Iv,m_Game.get_KingShotThree());*/
+
+        if(m_IsKingMoveLeft) {
+            enemyIV.setX(enemyIV.getX()-m_ScreenSizeX / enemy.getSpeed());
+            if (enemyIV.getX() < 0) {
+                m_IsKingMoveLeft = false;
+            }
+        }
+        else
+        {
+            enemyIV.setX(enemyIV.getX()+ m_ScreenSizeX / enemy.getSpeed());
+            if (enemyIV.getX() + enemyIV.getWidth() > m_ScreenSizeX) {
+                m_IsKingMoveLeft = true;
+            }
+        }
+
+        if(!m_KingIsAbove){
+        enemy.setRect((int) enemyIV.getY(),
+                (int) enemyIV.getX(),
+                (int) enemyIV.getY()+ enemyIV.getHeight(),
+                (int) enemyIV.getX()+ enemyIV.getWidth());}
+    }
+
+    private void checkIfHitKing(ImageView enemyIV, ValueEnemyItem enemy) {
+        if (Rect.intersects(m_Game.get_Shot().getRect(), enemy.getRect())) {
+
+            playSound(R.raw.crash_sound);
+            enemyIV.startAnimation(m_AnimationKingBlink);
+
+            m_Game.hitTheKing();
+            if(m_Game.getEnemyKingLives() <=0)
+            {
+                m_IsKingDead = true;
+                enemyIV.setVisibility(View.GONE);
+                m_Game.get_Player().setScore(m_Game.get_Player().getScore()+enemy.getValue());
+                m_ScoreTv.setText(getResources().getString(R.string.score) + m_Game.get_Player().getScore());
+            }
+
+            m_ShotsIv.setX((int) m_PlayerIv.getY() - m_PlayerIv.getHeight() + m_ShotsIv.getHeight() / 2);
+            m_ShotsIv.setY(((int) m_PlayerIv.getX() + m_PlayerIv.getWidth() / 2) - m_ShotsIv.getWidth() / 2);
+        }
+    }
+
     private void checkIfHitEnemies(ImageView enemyIV, ValueEnemyItem enemy) {
         if (Rect.intersects(m_Game.get_Shot().getRect(), enemy.getRect())) {
 
@@ -867,6 +1139,7 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
             intent.putExtra("Sound",mIsSound);
             intent.putExtra("Vibrate",mIsVibrate);
             intent.putExtra("Music",mIsMusic);
+            mServ.changeMusic(R.raw.main_music);
             mServ.pauseMusic();
             overridePendingTransition(android.R.anim.fade_out,android.R.anim.fade_out);
             isInIntent = false;
@@ -886,6 +1159,21 @@ public class RunGameActivity extends AppCompatActivity implements View.OnTouchLi
         m_BrokenHeartIv.setVisibility(View.INVISIBLE);
         m_PlayerIv.startAnimation(m_AnimationSpaceShipBlink);
         vibrate();
+    }
+
+
+
+    private void checkIfPlayerEnemyShotsCollision(ImageView kingShotIV, GameItem kingShot)
+    {
+        if (Rect.intersects(m_Game.get_Player().getRect(), kingShot.getRect())){
+            m_Game.get_Player().hit();
+
+            kingShotIV.setX((int)Math.floor(Math.random() * (kingShotIV.getX() + m_EnemyKingIv.getWidth() - kingShotIV.getWidth())));
+            kingShotIV.setY(600);
+
+            collision();
+
+        }
     }
 
     private void checkIfPlayerEnemyCollision(ImageView enemyIV, ValueEnemyItem enemy)

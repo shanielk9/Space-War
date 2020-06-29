@@ -30,6 +30,7 @@ public class WinningActivity extends AppCompatActivity implements View.OnClickLi
     EditText m_NameEt;
     Button m_OkBtn;
     TextView m_PlayerScore;
+    TextView m_ScrollingText;
 
     SharedPreferences firstPlaceScore;
     SharedPreferences secondPlaceScore;
@@ -68,6 +69,9 @@ public class WinningActivity extends AppCompatActivity implements View.OnClickLi
         m_TxtLayout = findViewById(R.id.txt_layout);
         Animation layoutScaleUp = AnimationUtils.loadAnimation(this,R.anim.scale_up);
         m_TxtLayout.setAnimation(layoutScaleUp);
+
+        m_ScrollingText = findViewById(R.id.scrolling_text);
+        m_ScrollingText.setSelected(true);
 
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
