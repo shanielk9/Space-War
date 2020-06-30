@@ -37,11 +37,14 @@ import java.util.TimerTask;
 
 public class TutorialActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener {
 
+    private final static int MARGIN_CIRCLE = 45;
+    private final static int MARGIN_SIZE = 200;
     ImageView m_Player;
     ImageView m_Enemy;
     ImageView m_Gift;
     ImageView m_Shots;
     ImageView m_Asteroid;
+    ImageView m_Circle;
     Rect m_PlayerRect;
     Rect m_EnemyRect;
     Rect m_AsteroidRect;
@@ -59,6 +62,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private boolean m_IsKnowToTakeGift;
     private boolean m_IsKnowToAvoidAsteroid;
     private boolean m_IsCountdown;
+    private boolean m_IsStart = true;
+    private boolean m_IsInIntent = true;
+    private boolean m_IsExplode = false;
     private int m_GiftsCollectedCounter;
     private int m_AsteroidsPassedCounter;
     private int m_EnemiesKilledCounter;
@@ -72,6 +78,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     private Timer m_Timer = new Timer();
     private Handler m_Handler = new Handler();
     private CountDownTimer m_CountDownTimer = null;
+    private CountDownTimer m_FinishTutorialCountDownTimer = null;
     private int m_EnemyX;
     private int m_EnemyY;
     private int m_AsteroidX;
@@ -91,9 +98,12 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     //animations
     private Animation m_AnimationBlink;
-    private Animation m_AnimationFadeInOut;
-    private AnimationDrawable m_EnemyOneAnim;
+    private Animation m_CircleBlinkAnim;
+    private Animation m_ExplodeAnim;
+    private AnimationDrawable m_EnemyAnim;
     private AnimationDrawable m_AsteroidAnim;
+    private AnimationDrawable m_ExplodeDrawableAnim;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +124,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_Player = findViewById(R.id.player_imageView);
         m_Shots = findViewById(R.id.shot_imageView);
         m_Gift = findViewById(R.id.gift_imageView);
+        m_Circle = findViewById(R.id.circle_imageView);
         m_BackgroundOne = findViewById(R.id.background_one);
         m_BackgroundTwo = findViewById(R.id.background_two);
         m_SkipBtn = findViewById(R.id.skip_btn);
@@ -123,8 +134,13 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_SkipBtn.setOnClickListener(this);
         m_FrameLayout.setOnTouchListener(this);
 
+
         //Set player info
         m_PlayerRect = new Rect(0,0,0,0);
+
+        //Set Circle focus location
+        m_Circle.setX(m_EnemyX - MARGIN_CIRCLE);
+        m_Circle.setY(m_EnemyY - MARGIN_CIRCLE);
 
         //Set enemy location
         m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
@@ -173,11 +189,40 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
         //initialize animation
         m_AnimationBlink = AnimationUtils.loadAnimation(this,R.anim.hit_spaceship_blink);
-        m_AnimationFadeInOut = AnimationUtils.loadAnimation(this,R.anim.fade_in_out);
+
+        m_EnemyAnim = (AnimationDrawable) m_Enemy.getDrawable();
+        m_EnemyAnim.start();
+
+        m_ExplodeDrawableAnim = (AnimationDrawable) getResources().getDrawable(R.drawable.explode_enemy_anim);
+        m_ExplodeAnim = AnimationUtils.loadAnimation(this,R.anim.hit_king_blink);
+        m_ExplodeAnim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                m_IsExplode = true;
+                m_Enemy.setImageDrawable(m_ExplodeDrawableAnim);
+                m_ExplodeDrawableAnim.start();
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                m_IsExplode = false;
+                m_EnemyY = -300;
+                m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
+                m_Enemy.setImageDrawable(m_EnemyAnim);
+                m_EnemyAnim.start();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
 
 
-        m_EnemyOneAnim = (AnimationDrawable) m_Enemy.getDrawable();
-        m_EnemyOneAnim.start();
+        m_CircleBlinkAnim = AnimationUtils.loadAnimation(this,R.anim.blink);
+        m_Circle.startAnimation(m_CircleBlinkAnim);
+
+
 
         m_AsteroidAnim = (AnimationDrawable) m_Asteroid.getDrawable();
         m_AsteroidAnim.start();
@@ -252,6 +297,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                         m_Handler.post(new Runnable() {
                             @Override
                             public void run() {
+                                locateCircle();
                                 if(m_IsLearning) {
                                     createShots();
                                     if (m_IsKnowToMove)
@@ -260,17 +306,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                                         moveAsteroid();
                                     if (m_IsKnowToAvoidAsteroid)
                                         sendGift();
-                                    if (m_IsKnowToTakeGift) {
-                                        Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
-                                        intent.putExtra("Sound", m_IsSound);
-                                        intent.putExtra("Vibrate", m_IsVibrate);
-                                        intent.putExtra("Music", m_IsMusic);
-                                        setSharedPreference();
-                                        startActivity(intent);
-                                        overridePendingTransition(R.anim.fade_in_out, android.R.anim.fade_out);
-                                        TutorialActivity.this.finish();
-                                        m_IsLearning = false;
-                                        m_Timer.cancel();
+                                    if (m_IsKnowToTakeGift && m_IsStart) {
+                                        m_Circle.setVisibility(View.GONE);
+                                        m_Circle.clearAnimation();
+                                        startGame();
                                     }
                                 }
                             }
@@ -281,44 +320,109 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         }.start();
     }
 
+    private void locateCircle() {
+        if (m_IsKnowToMove && !m_IsKnowToKill) {
+            m_Circle.setVisibility(View.VISIBLE);
+            m_Circle.setX(m_EnemyX - MARGIN_CIRCLE);
+            m_Circle.setY(m_EnemyY - MARGIN_CIRCLE);
+        }
+
+        if (m_IsKnowToKill && !m_IsKnowToAvoidAsteroid) {
+            m_Circle.setX(m_AsteroidX - MARGIN_CIRCLE);
+            m_Circle.setY(m_AsteroidY - MARGIN_CIRCLE);
+        }
+
+        if (m_IsKnowToAvoidAsteroid && !m_IsKnowToTakeGift) {
+            m_Circle.getLayoutParams().width = MARGIN_SIZE;
+            m_Circle.getLayoutParams().height = MARGIN_SIZE;
+            m_Circle.requestLayout();
+
+            m_Circle.setX(m_GiftX - MARGIN_CIRCLE-5);
+            m_Circle.setY(m_GiftY - MARGIN_CIRCLE-5);
+        }
+
+        if(!m_IsLearning)
+        {
+            m_Circle.setVisibility(View.GONE);
+        }
+    }
+
+    private void startGame()
+    {
+        m_Timer.cancel();
+        m_FinishTutorialCountDownTimer = new CountDownTimer(2000,1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if(m_IsStart)
+                {
+                    m_SkipBtn.setVisibility(View.GONE);
+                    m_Asteroid.setVisibility(View.GONE);
+                    m_Enemy.setVisibility(View.GONE);
+                    m_Shots.setVisibility(View.GONE);
+                    m_Gift.setVisibility(View.GONE);
+                    movePlayerUpWhileFinishLevel();
+                    m_IsStart = false;
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                if(m_IsInIntent) {
+                    m_IsInIntent=false;
+                    Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
+                    intent.putExtra("Sound", m_IsSound);
+                    intent.putExtra("Vibrate", m_IsVibrate);
+                    intent.putExtra("Music", m_IsMusic);
+                    setSharedPreference();
+                    startActivity(intent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    TutorialActivity.this.finish();
+                    m_IsLearning = false;
+                }
+            }
+        }.start();
+
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                m_XDelta = (int) (m_Player.getX() - event.getRawX());
-                m_YDelta = (int) (m_Player.getY() - event.getRawY());
-                m_LastAction = MotionEvent.ACTION_DOWN;
-                break;
+        if(m_IsStart) {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    m_XDelta = (int) (m_Player.getX() - event.getRawX());
+                    m_YDelta = (int) (m_Player.getY() - event.getRawY());
+                    m_LastAction = MotionEvent.ACTION_DOWN;
+                    break;
 
-            case MotionEvent.ACTION_MOVE:
-                if (event.getRawX() + m_XDelta > 0 && event.getRawX() + m_XDelta < m_ScreenSizeX - m_Player.getWidth())
-                    m_Player.setX(event.getRawX() + m_XDelta);
-                if (event.getRawY() + m_YDelta > m_ScreenSizeY/2 && event.getRawY() + m_YDelta < m_ScreenSizeY - m_Player.getHeight())
-                    m_Player.setY(event.getRawY() + m_YDelta);
+                case MotionEvent.ACTION_MOVE:
+                    if (event.getRawX() + m_XDelta > 0 && event.getRawX() + m_XDelta < m_ScreenSizeX - m_Player.getWidth())
+                        m_Player.setX(event.getRawX() + m_XDelta);
+                    if (event.getRawY() + m_YDelta > m_ScreenSizeY / 2 && event.getRawY() + m_YDelta < m_ScreenSizeY - m_Player.getHeight())
+                        m_Player.setY(event.getRawY() + m_YDelta);
 
-                m_LastAction = MotionEvent.ACTION_MOVE;
+                    m_LastAction = MotionEvent.ACTION_MOVE;
 
-                m_PlayerRect.left = (int)m_Player.getX();
-                m_PlayerRect.top = (int)m_Player.getY();
-                m_PlayerRect.right = (int)m_Player.getX()+m_Player.getWidth();
-                m_PlayerRect.bottom = (int)m_Player.getY()+m_Player.getHeight();
-                break;
+                    m_PlayerRect.left = (int) m_Player.getX();
+                    m_PlayerRect.top = (int) m_Player.getY();
+                    m_PlayerRect.right = (int) m_Player.getX() + m_Player.getWidth();
+                    m_PlayerRect.bottom = (int) m_Player.getY() + m_Player.getHeight();
+                    break;
 
-            case MotionEvent.ACTION_UP:
-                if(!m_IsKnowToMove && !m_IsCountdown) {
-                    m_PlayerMovedCounter++;
-                    m_TutorialTv.setText(getResources().getString(R.string.move_space) + "\n" + m_PlayerMovedCounter + "/4");
+                case MotionEvent.ACTION_UP:
+                    if (!m_IsKnowToMove && !m_IsCountdown) {
+                        m_PlayerMovedCounter++;
+                        m_TutorialTv.setText(getResources().getString(R.string.move_space) + "\n" + m_PlayerMovedCounter + "/4");
 
-                    if(m_PlayerMovedCounter == 4)
-                    {
-                        m_IsKnowToMove = true;
-                        m_TutorialTv.setText(getResources().getString(R.string.kill_enemies) +"\n" + m_EnemiesKilledCounter + "/3");
+                        if (m_PlayerMovedCounter == 4) {
+                            m_IsKnowToMove = true;
+                            m_TutorialTv.setText(getResources().getString(R.string.kill_enemies) + "\n" + m_EnemiesKilledCounter + "/3");
+                        }
                     }
-                }
-                break;
+                    break;
 
-            default:
-                return false;
+                default:
+                    return false;
+            }
         }
         return true;
     }
@@ -389,6 +493,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
         m_EnemyY += m_ScreenSizeY/500;
         if(m_EnemyY > m_ScreenSizeY)
         {
+
             m_EnemyY = -300;
             m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()*2));
         }
@@ -404,7 +509,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
 
     private void checkIfEnemyPlayerCollision()
     {
-        if (Rect.intersects(m_PlayerRect,m_EnemyRect)){
+        if (Rect.intersects(m_PlayerRect,m_EnemyRect) && !m_IsExplode){
             vibrate();
             playSound(R.raw.explode);
 
@@ -475,10 +580,9 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
     }
 
     private void checkIfHitEnemies() {
-        if (Rect.intersects(m_ShotsRect, m_EnemyRect)) {
+        if (Rect.intersects(m_ShotsRect, m_EnemyRect) && !m_IsExplode) {
             playSound(R.raw.crash_sound);
-            m_EnemyY = -300;
-            m_EnemyX = (int) Math.floor(Math.random() * (m_ScreenSizeX - m_Enemy.getWidth()));
+            m_Enemy.startAnimation(m_ExplodeAnim);
 
             m_Enemy.setX(m_EnemyX);
             m_Enemy.setY(m_EnemyY);
@@ -520,6 +624,36 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
             }
         }
     }
+
+
+    private void movePlayerUpWhileFinishLevel() {
+        final Boolean[] isUp = {true};
+        final Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                m_Handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        m_Player.setY(m_Player.getY()-m_ScreenSizeY/150);
+                        if(m_Player.getY() < -200)
+                        {
+                            isUp[0] = false;
+
+                            m_Player.setY(m_ScreenSizeY-500);
+                            m_Player.setX(m_ScreenSizeX/2 - m_Player.getWidth()/2);
+                            m_Player.setY(m_Player.getY()-m_ScreenSizeY/150);
+
+                        }
+                        if(!isUp[0] && m_Player.getY() < m_ScreenSizeY-200-m_Player.getHeight())
+                        {   t.cancel(); }
+                    }
+                });
+            }}, 0, 20);
+
+    }
+
 
 
     private ServiceConnection Scon = new ServiceConnection(){
@@ -607,6 +741,7 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                 m_Handler.post(new Runnable() {
                     @Override
                     public void run() {
+                        locateCircle();
                         if(m_IsLearning) {
                             createShots();
                             if (m_IsKnowToMove)
@@ -615,17 +750,10 @@ public class TutorialActivity extends AppCompatActivity implements View.OnTouchL
                                 moveAsteroid();
                             if (m_IsKnowToAvoidAsteroid)
                                 sendGift();
-                            if (m_IsKnowToTakeGift) {
-                                Intent intent = new Intent(TutorialActivity.this, RunGameActivity.class);
-                                intent.putExtra("Sound", m_IsSound);
-                                intent.putExtra("Vibrate", m_IsVibrate);
-                                intent.putExtra("Music", m_IsMusic);
-                                setSharedPreference();
-                                startActivity(intent);
-                                overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_out);
-                                TutorialActivity.this.finish();
-                                m_IsLearning = false;
-                                m_Timer.cancel();
+                            if (m_IsKnowToTakeGift && m_IsStart) {
+                                m_Circle.setVisibility(View.GONE);
+                                m_Circle.clearAnimation();
+                                startGame();
                             }
                         }
                     }

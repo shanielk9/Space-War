@@ -45,8 +45,6 @@
         android:shadowRadius="2"
         android:shadowColor="@color/white"/>
 
-
-
     <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -70,6 +68,15 @@
         android:outlineSpotShadowColor="@color/black"
         android:layout_gravity="center|top"
         android:src="@drawable/ic_gift"/>
+
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:id="@+id/circle_imageView"
+        android:visibility="gone"
+        android:outlineSpotShadowColor="@color/black"
+        android:layout_gravity="center|top"
+        android:src="@drawable/tutorial_circle"/>
 
     <ImageView
         android:layout_width="20dp"

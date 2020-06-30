@@ -11,7 +11,7 @@ public class Game {
     private static final int ENEMY_FIVE_VALUE = 40;
     private static final int ENEMY_SIX_VALUE = 50;
     private static final int ENEMY_KING_VALUE = 1000;
-    private  int m_enemyKingLives = 20;
+    private  int m_enemyKingLives = 50;
 
 
     // Objects

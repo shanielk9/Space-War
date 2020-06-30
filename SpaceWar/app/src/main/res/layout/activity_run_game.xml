@@ -33,6 +33,58 @@
             android:visibility="gone"
             android:src="@drawable/stage_one_pattern"/>
 
+        <LinearLayout
+            android:id="@+id/linear_settings_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp">
+
+            <Button
+                android:id="@+id/home_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="center"
+                android:visibility="invisible"
+                android:background="@drawable/ic_home"/>
+
+            <ImageView
+                android:id="@+id/heart_one"
+                android:layout_width="30dp"
+                android:layout_gravity="center"
+                android:layout_height="30dp"
+                android:layout_marginLeft="80dp"
+                android:src="@drawable/ic_hearts"/>
+
+            <ImageView
+                android:id="@+id/heart_two"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"
+                android:src="@drawable/ic_hearts"/>
+
+            <ImageView
+                android:id="@+id/heart_three"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_hearts"/>
+
+
+            <Button
+                android:id="@+id/pause_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="70dp"
+                android:layout_gravity="center"
+                android:visibility="invisible"
+                android:background="@drawable/ic_paused"/>
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/score_tv"
@@ -72,58 +124,7 @@
             android:visibility="gone"
             android:background="@drawable/ic_play"/>
 
-        <LinearLayout
-            android:id="@+id/linear_settings_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:orientation="horizontal"
-            android:layout_marginBottom="20dp">
 
-            <Button
-                android:id="@+id/home_btn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="10dp"
-                android:layout_gravity="center"
-                android:visibility="invisible"
-                android:background="@drawable/ic_home"/>
-
-        <ImageView
-            android:id="@+id/heart_one"
-            android:layout_width="30dp"
-            android:layout_gravity="center"
-            android:layout_height="30dp"
-            android:layout_marginLeft="80dp"
-            android:src="@drawable/ic_hearts"/>
-
-        <ImageView
-            android:id="@+id/heart_two"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="center"
-            android:layout_marginLeft="10dp"
-            android:src="@drawable/ic_hearts"/>
-
-        <ImageView
-            android:id="@+id/heart_three"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginLeft="10dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_hearts"/>
-
-
-            <Button
-                android:id="@+id/pause_btn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginLeft="70dp"
-                android:layout_gravity="center"
-                android:visibility="invisible"
-                android:background="@drawable/ic_paused"/>
-
-        </LinearLayout>
 
         <ImageView
             android:id="@+id/broken_heart"
