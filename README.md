@@ -1,7 +1,8 @@
 # Space War
  ## Space War : save the galaxy - android game, developed as part of Android course using android studio
  
-
+  Game targets: develop agility and attention, avoid enemies, collect points, and break personal records.
+ 
 **Watch game video:** https://youtu.be/ijifJT2VqIs
 
 
